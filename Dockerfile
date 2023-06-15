@@ -1,6 +1,6 @@
 FROM debian:buster
 
-RUN 	apt-get -y update; \ 
+RUN 	apt-get -y update; \
 	apt-get -y install nmap;  \
  	apt-get -y install make; \
     apt-get -y install gcc; \
