@@ -1,6 +1,8 @@
 #ifndef STRUCT_H
 # define STRUCT_H
 
+# include "./define.h"
+
 enum e_scan_type
 {
 	SCAN_SYN,
@@ -12,28 +14,31 @@ enum e_scan_type
 	SCAN_COUNT
 };
 
-typedef struct s_target
-{
-	char 		*hostname;
-	int 		port;
-	scan_type_t	scan_type;
-}   t_target;
 
 typedef struct s_thread_info
 {
-    pthread_t   thread;
-    target_t    target;
+	char		*target_hostname;
+	int 		port;
+	int			scan_type;
 }   t_thread_info;
+
+typedef struct s_target
+{
+    char             *ranged_port;
+	char 			*hostname;
+	int				scan_types[MAX_SCANS];
+	int             *stock_port;
+	int				*all_ports;
+}   t_target;
+
 
 typedef struct s_context
 {
-    target_t    *targets; // Un tableau de cibles
+    t_target   *targets; // Un tableau de cibles
+	t_thread_info 	*workers;
     int         target_count; // Nombre de cibles
     int         thread_count;
-    scan_type_t scan_types[SCAN_COUNT];
-    // Autres informations...
-}   t_context;
 
-global_config_t g_config;
+}   t_context;
 
 #endif
