@@ -1,21 +1,51 @@
 #include "./includes/ft_nmap.h"
 #include <string.h>
 
+int parse_ports(char *av)
+{
+    (void)av;
+    return 0;
+}
+
+int parse_file(char *av)
+{
+    (void)av;
+    return 0;
+}
+
+int parse_thread_count(char *av)
+{
+    (void)av;
+    return 0;
+}
+
+int parse_scan_type(char *av)
+{
+    (void)av;
+    return 0;
+}
+
+int parse_ip(char *av)
+{
+    (void)av;
+    return 0;
+}
+
 int check_arguments(char **av, int *i)
 {
-     if (strcmp(argv[*i], "--ports") == 0)
-        return parse_ports(argv[*i]);
-    else if (strcmp(argv[*i], "--file") == 0)
-        return parse_file(argv[*i]);
-    else if (strcmp(argv[*i], "--speedup") == 0)
-        return parse_thread_count(argv[*i]);
-    else if (strcmp(argv[*i], "--scan") == 0)
-        return parse_scan_type(argv[*i]);
-    else if (strcmp(argv[*i], "--ip") == 0)
-        return parse_ip(argv[*i]);
+    if (strcmp(av[*i], "--ports") == 0)
+        return parse_ports(av[*i]);
+    else if (strcmp(av[*i], "--file") == 0)
+        return parse_file(av[*i]);
+    else if (strcmp(av[*i], "--speedup") == 0)
+        return parse_thread_count(av[*i]);
+    else if (strcmp(av[*i], "--scan") == 0)
+        return parse_scan_type(av[*i]);
+    else if (strcmp(av[*i], "--ip") == 0)
+        return parse_ip(av[*i]);
     else
     {
-        fprintf(stderr, "ft_nmap: unrecognized option '%s'", av[i]);
+        fprintf(stderr, "ft_nmap: unrecognized option '%s'", av[*i]);
         return 1;
     }
     return 0;
@@ -49,12 +79,14 @@ int init_parsing(int ac, char **av)
 
     while (i < ac)
     {
-        if (i + 1 < argc)
+        if (i + 1 < ac)
+        {
             if (check_arguments(av, &i) == 1)
                 return 1;
+        }
         else
         {
-            printf(stderr, "ft_nmap: option '%s' require an argument.\n", av[i]);
+            fprintf(stderr, "ft_nmap: option '%s' require an argument.\n", av[i]);
             return 1;
         }
         i++;
