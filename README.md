@@ -59,4 +59,8 @@ The project is about rewriting a part of the nmap port scanner.
 
 ## Usage
 
-Soon...
+docker build -t ft_nmap .
+
+docker run -v ./:/home/ -it ft_nmap bash
+
+make
