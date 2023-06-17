@@ -31,7 +31,7 @@ int parse_ip(char *av)
     return 0;
 }
 
-int check_arguments(char **av, int *i)
+int parse_arguments(char **av, int *i)
 {
     if (strcmp(av[*i], "--ports") == 0)
         return parse_ports(av[*i]);
@@ -70,18 +70,16 @@ void check_help_menu(int ac, char **av)
     }
 }
 
-int init_parsing(int ac, char **av)
+int check_arguments(int ac, char **av)
 {
     int i;
 
     i = 1;
-    check_help_menu(ac, av);
-
     while (i < ac)
     {
         if (i + 1 < ac)
         {
-            if (check_arguments(av, &i) == 1)
+            if (parse_arguments(av, &i) == 1)
                 return 1;
         }
         else
@@ -91,6 +89,14 @@ int init_parsing(int ac, char **av)
         }
         i++;
     }
+    return 0;
+}
+
+int init_parsing(int ac, char **av)
+{
+    check_help_menu(ac, av);
+    if (check_arguments(ac, av) == 1)
+        return 1;
 
     return 0;
 }
