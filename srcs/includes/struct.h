@@ -1,7 +1,7 @@
 #ifndef STRUCT_H
 # define STRUCT_H
 
-# include "./define.h"
+# include "./includes.h"
 
 enum e_scan_type
 {
@@ -26,7 +26,6 @@ typedef struct s_thread_info
 typedef struct s_target
 {
 	char 			*hostname;
-	int				*ports;
 }   				t_target;
 
 
@@ -37,9 +36,8 @@ typedef struct s_context
     int         	target_count;
     int         	thread_count;
 	int				port_count;
-	int             *stock_port; // Port given alone
+	int             *ports; // Port given alone
 	int				scan_types[MAX_SCANS]; // Tout les types de scan a proceder
-    char            *ranged_port; // Port given in a range
 	char			*file_path; // File path to all the hostnames
 	char			**hostnames; // All the hostname to map
 }   				t_context;
