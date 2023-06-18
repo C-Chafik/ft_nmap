@@ -170,8 +170,9 @@ int parse_ports(t_context *context, char *av)
         if (context->ports[i] == 65536)
             duplicate_count++;
     }
+
     total_ports -= duplicate_count;
-    
+    context->port_count = total_ports;
     return 0;
 }
 
