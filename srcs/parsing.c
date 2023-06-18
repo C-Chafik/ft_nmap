@@ -163,9 +163,15 @@ int parse_ports(t_context *context, char *av)
 
     sort_and_tag_duplicate(context->ports, total_ports);
 
-    for (int i = 0; i < total_ports ; i++)
-        printf("%d ", context->ports[i]);
+    int duplicate_count = 0;
 
+    for (int i = 0; i < total_ports; i++)
+    {
+        if (context->ports[i] == 65536)
+            duplicate_count++;
+    }
+    total_ports -= duplicate_count;
+    
     return 0;
 }
 
