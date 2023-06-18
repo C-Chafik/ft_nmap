@@ -1,4 +1,7 @@
 SRCS =	./srcs/main.c \
+		./srcs/parsing.c \
+		./srcs/utils.c \
+		./srcs/memory_utils.c \
 
 OBJS =	${SRCS:.c=.o}
 
