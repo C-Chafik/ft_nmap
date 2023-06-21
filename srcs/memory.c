@@ -16,4 +16,6 @@ void    free_context(t_context *context)
 {
     if (context->ports)
         free(context->ports);
+    if (context->hostnames)
+        free_tab(context->hostnames);
 }

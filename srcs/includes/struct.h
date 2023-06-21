@@ -38,7 +38,6 @@ typedef struct s_context
 	int				port_count;
 	int             *ports; // Port given alone
 	int				scan_types[MAX_SCANS]; // Tout les types de scan a proceder
-	char			*file_path; // File path to all the hostnames
 	char			**hostnames; // All the hostname to map
 }   				t_context;
 

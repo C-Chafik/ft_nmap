@@ -18,7 +18,6 @@ static void init_context(t_context *context)
     context->thread_count = 0;
     context->port_count = 0;
     context->ports = NULL;
-    context->file_path = NULL;
     context->hostnames = NULL;
     init_scan_types(context->scan_types);
 }
@@ -29,7 +28,7 @@ int main(int ac, char **av)
     int         exit_code;
 
     if ( ac < 2 )
-        return 1;
+        return EXIT_FAILURE;
 
     init_context(&context);
 
@@ -37,9 +36,9 @@ int main(int ac, char **av)
     if (exit_code > 0)
     {
         free_context(&context);
-        return exit_code;
+        return EXIT_FAILURE;
     }
 
     free_context(&context);
-    return 0;
+    return EXIT_SUCCESS;
 }
