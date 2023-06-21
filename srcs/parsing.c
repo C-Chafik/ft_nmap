@@ -184,9 +184,54 @@ int parse_ports(t_context *context, char *av)
 
 static int parse_file(t_context *context, char *av)
 {
-    (void)av;
-    (void)context;
-    printf("%s\n", av);
+    int fd;
+
+    fd = 0;
+    if (context->hostnames != NULL) 
+    {
+        fprintf(stderr, "Multiple --ip or --file arguments provided. Only one is allowed.\n");
+        return -1;
+    }
+    else if (ft_strncmp(av, "/dev/", 5) == 0)
+    {
+        fprintf(stderr, "Please put a valid file and be kind\n");
+        return -1;
+    }
+
+    fd = open(av, O_RDONLY);
+    if (fd < 0)
+    {
+        perror("Failed to open file");
+        return -1;
+    }
+
+    char *ptr = NULL;
+    char *buff = NULL;
+    char *file_content = ft_strdup("");
+
+    while ((buff = get_next_line(fd)))
+    {
+        ptr = file_content;
+        file_content = ft_strjoin(file_content, buff);
+        if (buff)
+            free(buff);
+        if (ptr)
+            free(ptr);
+    }
+
+    context->hostnames = ft_split(file_content, '\n');
+    if (!context->hostnames)
+    {
+        perror("Failed to allocate memory for context->hostnames array.\n");
+        if (file_content)
+            free(file_content);
+        close(fd);
+        return -1;
+    }
+
+    if (file_content)
+        free(file_content);
+    close(fd);
     return 0;
 }
 
