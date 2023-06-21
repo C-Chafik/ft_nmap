@@ -33,7 +33,7 @@ int main(int ac, char **av)
     init_context(&context);
 
     exit_code = init_parsing(&context, ac, av);
-    if (exit_code > 0)
+    if (exit_code < 0)
     {
         free_context(&context);
         return EXIT_FAILURE;
