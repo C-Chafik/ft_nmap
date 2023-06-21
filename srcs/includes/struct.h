@@ -14,7 +14,6 @@ enum e_scan_type
 	SCAN_COUNT
 };
 
-
 typedef struct s_thread_info
 {
 	char		*target_hostname;

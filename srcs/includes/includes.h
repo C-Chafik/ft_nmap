@@ -4,6 +4,7 @@
 # include <stdlib.h>
 # include <pthread.h>
 # include <pcap/pcap.h>
+#include <signal.h>
 # include <stdio.h>
 # include <unistd.h>
 # include <stdbool.h>
