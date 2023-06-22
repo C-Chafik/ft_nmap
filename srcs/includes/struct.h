@@ -14,6 +14,16 @@ enum e_scan_type
 	SCAN_COUNT
 };
 
+enum e_tcp_flags
+{
+	URG = 32,
+	ACK = 16,
+	PSH = 8,
+	RST = 4,
+	SYN = 2,
+	FIN = 1
+};
+
 typedef struct s_thread_info
 {
 	char		*target_hostname;
