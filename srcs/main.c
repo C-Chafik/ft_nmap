@@ -40,7 +40,7 @@ int main(int ac, char **av)
         return EXIT_FAILURE;
     }
 
-    print_parsing_results(&context);
+    // print_parsing_results(&context);
 
     free_context(&context);
     return EXIT_SUCCESS;
