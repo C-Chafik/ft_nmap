@@ -20,7 +20,7 @@ typedef struct s_thread_info
 	char		*target_hostname;
 	char		*output;
 	int 		port;
-	int			scan_type;
+	char		*scan_type;
 }   			t_thread_info;
 
 typedef struct s_target
@@ -37,7 +37,7 @@ typedef struct s_context
     int         	thread_count;
 	int				port_count;
 	int             *ports; // Port given alone
-	int				scan_types[MAX_SCANS]; // Tout les types de scan a proceder
+	char			*scan_types[SCAN_COUNT]; // Tout les types de scan a proceder
 	char			**hostnames; // All the hostname to map
 }   				t_context;
 
