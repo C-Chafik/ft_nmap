@@ -287,8 +287,8 @@ static int parse_scan_type(t_context *context, char *av)
 
     if (d_ptrlen(scan_types) == 0)
     {
-        free_tab(scan_types);
         fprintf(stderr, "Invalid scan type\n");
+        free_tab(scan_types);
         return -1;
     }
 
