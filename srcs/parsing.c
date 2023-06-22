@@ -6,9 +6,27 @@
 
 */
 
+/*
+Help Screen
+ft_nmap [OPTIONS]
+--help Print this help screen
+--ports ports to scan (eg: 1-10 or 1,2,3 or 1,5-15)
+--ip ip addresses to scan in dot format
+--file File name containing IP addresses to scan,
+--speedup [250 max] number of parallel threads to use
+--scan SYN/NULL/FIN/XMAS/ACK/UDP
+*/
+
+
 static int handle_help_menu(void)
 {
-    fprintf(stdout, "Print help and exit the program whatever other argument there are.\n");
+    printf("ft_nmap [OPTIONS]\n");
+    printf("--help Print this help screen\n");
+    printf("--ports ports to scan (eg: 1-10 or 1,2,3 or 1,5-15)\n");
+    printf("--ip ip addresses to scan in dot format\n");
+    printf("--file File name containing IP addresses to scan,\n");
+    printf("--speedup [250 max] number of parallel threads to use\n");
+    printf("--scan SYN/NULL/FIN/XMAS/ACK/UDP\n");
     return 0;
 }
 
@@ -237,17 +255,66 @@ static int parse_file(t_context *context, char *av)
 
 static int parse_thread_count(t_context *context, char *av)
 {
-    (void)context;
-    (void)av;
-    printf("%s\n", av);
+    int thread_count;
+
+    thread_count = ft_atoi(av);
+
+    if (thread_count <= 0 || thread_count > 250) 
+    {
+        fprintf(stderr, "Invalid speedup number. speed must be between 1 and 250.\n");
+        return -1;
+    }
+    
+    context->thread_count = thread_count;
     return 0;
 }
 
 static int parse_scan_type(t_context *context, char *av)
 {
-    (void)context;
-    (void)av;
-    printf("%s\n", av);
+
+    // Initially set all scans to false (assuming 0 is false)
+    for (int i = 0; i < SCAN_COUNT; ++i) 
+        context->scan_types[i] = NULL;
+
+    char **scan_types = NULL;
+
+    scan_types = ft_split(av, '/');
+    if (!scan_types)
+    {
+        perror("Failed to allocate memory for scan_types array.\n");
+        return -1;
+    }
+
+    if (d_ptrlen(scan_types) == 0)
+    {
+        free_tab(scan_types);
+        fprintf(stderr, "No scans to perform were given.\n");
+        return -1;
+    }
+
+    for (int i = 0; scan_types[i] != NULL; i++)
+    {
+        if (ft_strncmp(scan_types[i], "SYN", 3) == 0) 
+            context->scan_types[SCAN_SYN] = "SYN";
+        else if (ft_strncmp(scan_types[i], "NULL", 4) == 0) 
+            context->scan_types[SCAN_NULL] = "NULL";
+        else if (ft_strncmp(scan_types[i], "FIN", 3) == 0) 
+            context->scan_types[SCAN_FIN] = "FIN";
+        else if (ft_strncmp(scan_types[i], "XMAS", 4) == 0) 
+            context->scan_types[SCAN_XMAS] = "XMAS";
+        else if (ft_strncmp(scan_types[i], "ACK", 3) == 0) 
+            context->scan_types[SCAN_ACK] = "ACK";
+        else if (ft_strncmp(scan_types[i], "UDP", 3) == 0) 
+            context->scan_types[SCAN_UDP] = "UDP";
+        else
+        {
+            fprintf(stderr, "Invalid scan type: %s\n", scan_types[i]);
+            free_tab(scan_types);
+            return -1;
+        }
+    }
+
+    free_tab(scan_types);
     return 0;
 }
 
@@ -368,6 +435,27 @@ static int check_arguments(t_context *context, int ac, char **av)
     return 0;
 }
 
+int check_results(t_context *context)
+{
+    if (!context->ports)
+    {
+        fprintf(stderr, "No port to map were given.\n");
+        return -1;
+    }
+    else if (!context->hostnames)
+    {
+        fprintf(stderr, "No hostnames to map were given.\n");
+        return -1;
+    }
+    else if (!context->scan_types)
+    {
+        fprintf(stderr, "No scans to perform were given.\n");
+        return -1;
+    }
+
+    return 0;
+}
+
 /*
 
     PARSING - INIT
@@ -380,5 +468,7 @@ int init_parsing(t_context *context, int ac, char **av)
         exit(EXIT_SUCCESS);
     if (check_arguments(context, ac, av) == -1)
         return -1;
+    if (check_results(context) == -1)
+        return -10;
     return 0;
 }

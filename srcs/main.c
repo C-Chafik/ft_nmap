@@ -1,13 +1,14 @@
 #include "./includes/ft_nmap.h"
 
-static void init_scan_types(int *scan_types)
+static void init_scan_types(char **scan_types)
 {
-    scan_types[SCAN_SYN] = SCAN_SYN;
-    scan_types[SCAN_NULL] = SCAN_NULL;
-    scan_types[SCAN_ACK] = SCAN_ACK;
-    scan_types[SCAN_FIN] = SCAN_FIN;
-    scan_types[SCAN_XMAS] = SCAN_XMAS;
-    scan_types[SCAN_UDP] = SCAN_UDP;
+    scan_types[SCAN_SYN] = "SYN";
+    scan_types[SCAN_NULL] = "NULL";
+    scan_types[SCAN_ACK] = "ACK";
+    scan_types[SCAN_FIN] = "FIN";
+    scan_types[SCAN_XMAS] = "XMAS";
+    scan_types[SCAN_UDP] = "UDP";
+    scan_types[SCAN_COUNT] = NULL;
 }
 
 static void init_context(t_context *context)
