@@ -7,14 +7,25 @@ void print_parsing_results(t_context *context)
 	if (context->hostnames)
 	{
 		for (int i = 0; context->hostnames[i]; i++)
-			printf("->  %s\n", context->hostnames[i]);
+			printf(" | %s", context->hostnames[i]);
 	}
 	printf("\n");
 	printf("PORTS :\n");
 	if (context->ports)
 	{
 		for (int i = 0; i < context->port_count; i++)
-			printf("%d ", context->ports[i]);
+			printf(" | %d", context->ports[i]);
+	}
+	printf("\n");
+	printf("THREAD_COUNT :\n");
+	if (context->thread_count)
+		printf(" | %d\n", context->thread_count);
+	printf("SCAN_TYPES :\n");
+	if (context->scan_types)
+	{
+		for (int i = 0; i < SCAN_COUNT; i++)
+			if (context->scan_types[i])
+				printf(" | %s", context->scan_types[i]);
 	}
 	printf("\n");
 	printf(" === PARSING RESULT ===\n");
