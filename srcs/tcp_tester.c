@@ -77,7 +77,7 @@ void pcap_handler_fn(u_char *user, const struct pcap_pkthdr *header, const u_cha
 	u_char protocol = *(ip_header + 9);
 	if (protocol != IPPROTO_TCP)
 	{
-		printf(ANSI_COLOR_RED "Not a TCP packet. Skipping...\n\n" ANSI_COLOR_RESET);
+		printf(ANSI_COLOR_RED "Not a TCP packet. Skipping...\n" ANSI_COLOR_RESET);
 		exit(1);
 	}
 
@@ -173,19 +173,19 @@ void init_ip_header(struct iphdr **iph, char *datagram, char *source_ip, in_addr
 	(*iph)->check = csum((unsigned short *)datagram, (*iph)->tot_len);
 }
 
-void init_tcp_header(struct tcphdr **tcph, int port_src, int port_dest)
+void init_tcp_header(struct tcphdr **tcph, int port_src, int port_dest, u_char flags)
 {
 	(*tcph)->source = htons(port_src);
 	(*tcph)->dest = htons(port_dest);
 	(*tcph)->seq = 0;
 	(*tcph)->ack_seq = 0;
 	(*tcph)->doff = 5; 
-	(*tcph)->fin = 0;
-	(*tcph)->syn = 1;
-	(*tcph)->rst = 0;
-	(*tcph)->psh = 0;
-	(*tcph)->ack = 0;
-	(*tcph)->urg = 0;
+	(*tcph)->fin = !!(flags & FIN);
+	(*tcph)->syn = !!(flags & SYN);
+	(*tcph)->rst = !!(flags & RST);
+	(*tcph)->psh = !!(flags & PSH);
+	(*tcph)->ack = !!(flags & ACK);
+	(*tcph)->urg = !!(flags & URG);
 	// tcph->window = htons (5840);
 	(*tcph)->check = 0;
 	(*tcph)->urg_ptr = 0;
@@ -209,7 +209,7 @@ void init_tcp_packet(char *addr_src, int port_src, char *addr_dest, int port_des
 	sin.sin_addr.s_addr = inet_addr(addr_dest);
 
 	init_ip_header(&iph, datagram, source_ip, sin.sin_addr.s_addr);
-	init_tcp_header(&tcph, port_src, port_dest);
+	init_tcp_header(&tcph, port_src, port_dest, FIN | PSH | URG);
 
 	psh.source_address = inet_addr(source_ip);
 	psh.dest_address = sin.sin_addr.s_addr;
