@@ -102,10 +102,11 @@ void setup_record(pcap_t **handle_pcap)
 		exit(1);
 	}
 
-	*handle_pcap = pcap_open_live(devs->name, BUFSIZ, 0, 10000, errbuf);
+	*handle_pcap = pcap_open_live(devs->name, BUFSIZ, 0, 1500, errbuf);
 	if (!*handle_pcap)
 	{
 		fprintf(stderr, "%s\n", errbuf);
+		pcap_close(*handle_pcap);
 		exit(1);
 	}
 
@@ -130,59 +131,125 @@ void setup_record_filter(pcap_t **handle_pcap, char *port1, char *port2)
 	free(filter_exp);
 }
 
+unsigned short csum(unsigned short *ptr, int nbytes)
+{
+	register long sum;
+	unsigned short oddbyte;
+	register short answer;
+
+	sum = 0;
+	while (nbytes > 1)
+	{
+		sum += *ptr++;
+		nbytes -= 2;
+	}
+	if (nbytes == 1)
+	{
+		oddbyte = 0;
+		*((u_char *)&oddbyte) = *(u_char *)ptr;
+		sum += oddbyte;
+	}
+
+	sum = (sum >> 16) + (sum & 0xffff);
+	sum = sum + (sum >> 16);
+	answer = (short)~sum;
+
+	return (answer);
+}
+
+void init_ip_header(struct iphdr **iph, char *datagram, char *source_ip, in_addr_t s_addr)
+{
+	(*iph)->ihl = 5;
+	(*iph)->version = 4;
+	(*iph)->tos = 0;
+	(*iph)->tot_len = sizeof(struct iphdr) + sizeof(struct tcphdr);
+	(*iph)->id = htonl(54321); // id of this packet
+	(*iph)->frag_off = 0;
+	(*iph)->ttl = 255;
+	(*iph)->protocol = IPPROTO_TCP;
+	(*iph)->check = 0;				
+	(*iph)->saddr = inet_addr(source_ip); 
+	(*iph)->daddr = s_addr;
+	(*iph)->check = csum((unsigned short *)datagram, (*iph)->tot_len);
+}
+
+void init_tcp_header(struct tcphdr **tcph, int port_src, int port_dest)
+{
+	(*tcph)->source = htons(port_src);
+	(*tcph)->dest = htons(port_dest);
+	(*tcph)->seq = 0;
+	(*tcph)->ack_seq = 0;
+	(*tcph)->doff = 5; 
+	(*tcph)->fin = 0;
+	(*tcph)->syn = 1;
+	(*tcph)->rst = 0;
+	(*tcph)->psh = 0;
+	(*tcph)->ack = 0;
+	(*tcph)->urg = 0;
+	// tcph->window = htons (5840);
+	(*tcph)->check = 0;
+	(*tcph)->urg_ptr = 0;
+}
+
+void init_tcp_packet(char *addr_src, int port_src, char *addr_dest, int port_dest)
+{
+	char datagram[4096], source_ip[32], *pseudogram;
+	ft_bzero(datagram, 4096);
+
+	int sock = socket(AF_INET, SOCK_RAW, IPPROTO_TCP);
+	struct iphdr *iph = (struct iphdr *)datagram;
+	struct tcphdr *tcph = (struct tcphdr *)(datagram + sizeof(struct ip));
+
+	struct sockaddr_in sin;
+	struct pseudo_header psh;
+
+	ft_strlcpy(source_ip, addr_src, 11);
+	sin.sin_family = AF_INET;
+	sin.sin_port = htons(port_dest);
+	sin.sin_addr.s_addr = inet_addr(addr_dest);
+
+	init_ip_header(&iph, datagram, source_ip, sin.sin_addr.s_addr);
+	init_tcp_header(&tcph, port_src, port_dest);
+
+	psh.source_address = inet_addr(source_ip);
+	psh.dest_address = sin.sin_addr.s_addr;
+	psh.placeholder = 0;
+	psh.protocol = IPPROTO_TCP;
+	psh.tcp_length = htons(sizeof(struct tcphdr));
+
+	int psize = sizeof(struct pseudo_header) + sizeof(struct tcphdr);
+	pseudogram = malloc(psize);
+
+	memcpy(pseudogram, (char *)&psh, sizeof(struct pseudo_header));
+	memcpy(pseudogram + sizeof(struct pseudo_header), tcph, sizeof(struct tcphdr));
+
+	tcph->check = csum((unsigned short *)pseudogram, psize);
+
+	int one = 1;
+	const int *val = &one;
+
+	if (setsockopt(sock, IPPROTO_IP, IP_HDRINCL, val, sizeof(one)) < 0)
+	{
+		perror("Error setting IP_HDRINCL");
+		free(pseudogram);
+		close(sock);
+		exit(0);
+	}
+
+	if (sendto(sock, datagram, iph->tot_len, 0, (struct sockaddr *)&sin, sizeof(sin)) < 0)
+	{
+		free(pseudogram);
+		close(sock);
+		perror("sendto failed");
+	}
+
+	free(pseudogram);
+	close(sock);
+}
+
 void send_to_tcp_port()
 {
-	struct sockaddr_in serv_addr, send_addr;
-	bzero(&(serv_addr.sin_zero), 8);
-	bzero(&(send_addr.sin_zero), 8);
-
-	serv_addr.sin_family = AF_INET;
-	serv_addr.sin_addr.s_addr = inet_addr("172.17.0.2");
-	serv_addr.sin_port = htons(6675);
-
-	send_addr.sin_family = AF_INET;
-	send_addr.sin_addr.s_addr = inet_addr("172.17.0.3");
-	send_addr.sin_port = htons(6677);
-
-
-	int sock = socket(AF_INET, SOCK_STREAM, 0);
-	if (sock == -1)
-	{
-		fprintf(stderr, "%s\n", strerror(errno));
-		close(sock);
-		exit(1);
-	}
-
-	if (bind(sock, (struct sockaddr *)&serv_addr, sizeof(serv_addr)) == -1)
-	{
-		fprintf(stderr, "%s\n", strerror(errno));
-		close(sock);
-		exit(1);
-	}
-
-	struct timeval timeout = {0, 250000};
-	if (setsockopt(sock, SOL_SOCKET, SO_SNDTIMEO, &timeout, sizeof(timeout)) < 0)
-	{
-		fprintf(stderr, "%s\n", strerror(errno));
-		close(sock);
-		exit(1);
-	}
-
-	if (connect(sock, (struct sockaddr *)&send_addr, sizeof(send_addr)) == -1)
-	{
-		fprintf(stderr, "%s\n", strerror(errno));
-		close(sock);
-		exit(1);
-	}
-
-	if (sendto(sock, NULL, 0, 0, (struct sockaddr *)&send_addr, sizeof(struct sockaddr)) == -1)
-	{
-		fprintf(stderr, "%s\n", strerror(errno));
-		close(sock);
-		exit(1);
-	}
-
-	close(sock);
+	init_tcp_packet("172.17.0.2", 6675, "172.17.0.3", 6677);
 }
 
 static void *thread_start(void *arg)
@@ -205,8 +272,12 @@ void tcp_test_port(pcap_t **handle_pcap)
 		if (pcap_dispatch(*handle_pcap, 65535, pcap_handler_fn, user) == PCAP_ERROR)
 		{
 			pcap_geterr(*handle_pcap);
+			pcap_breakloop(*handle_pcap);
+			pcap_close(*handle_pcap);
 			exit(1);
 		}
+		pcap_breakloop(*handle_pcap);
+		pcap_close(*handle_pcap);
 	}
 
 	pthread_join(thread_id, NULL);
@@ -217,9 +288,6 @@ void tcp_tester()
 	pcap_t *handle_pcap = NULL;
 
 	setup_record(&handle_pcap);
-	// setup_record_filter(&handle_pcap, "80", "39582");
+	setup_record_filter(&handle_pcap, "6675", "6677");
 	tcp_test_port(&handle_pcap);
-
-	pcap_breakloop(handle_pcap);
-	pcap_close(handle_pcap);
 }
