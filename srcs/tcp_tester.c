@@ -31,7 +31,8 @@ void debug_print_tcp_header(const u_char *tcp_header, int tcp_header_length)
 	fprintf(stdout, " ]\n" ANSI_COLOR_RESET);
 }
 
-void debug_print_tcp_flags(const u_char *tcp_header, int tcp_header_length, const u_char *packet){
+void debug_print_tcp_flags(const u_char *tcp_header, int tcp_header_length, const u_char *packet)
+{
 	if (tcp_header_length > 12)
 	{
 		printf(ANSI_COLOR_BLUE "TCP FLAG: ");
@@ -67,8 +68,7 @@ void pcap_handler_fn(u_char *user, const struct pcap_pkthdr *header, const u_cha
 	int ip_header_length = 0;
 	int tcp_header_length = 0;
 
-	// debug_print_full_packet(header, packet);
-
+	debug_print_full_packet(header, packet);
 
 	ip_header = packet + ethernet_header_length;
 	ip_header_length = ((*ip_header) & 0x0F);
@@ -130,21 +130,86 @@ void setup_record_filter(pcap_t **handle_pcap, char *port1, char *port2)
 	free(filter_exp);
 }
 
-void send_to_tcp_port(){
-	return;
+void send_to_tcp_port()
+{
+	struct sockaddr_in serv_addr, send_addr;
+	bzero(&(serv_addr.sin_zero), 8);
+	bzero(&(send_addr.sin_zero), 8);
+
+	serv_addr.sin_family = AF_INET;
+	serv_addr.sin_addr.s_addr = inet_addr("172.17.0.2");
+	serv_addr.sin_port = htons(6675);
+
+	send_addr.sin_family = AF_INET;
+	send_addr.sin_addr.s_addr = inet_addr("172.17.0.3");
+	send_addr.sin_port = htons(6677);
+
+
+	int sock = socket(AF_INET, SOCK_STREAM, 0);
+	if (sock == -1)
+	{
+		fprintf(stderr, "%s\n", strerror(errno));
+		close(sock);
+		exit(1);
+	}
+
+	if (bind(sock, (struct sockaddr *)&serv_addr, sizeof(serv_addr)) == -1)
+	{
+		fprintf(stderr, "%s\n", strerror(errno));
+		close(sock);
+		exit(1);
+	}
+
+	struct timeval timeout = {0, 250000};
+	if (setsockopt(sock, SOL_SOCKET, SO_SNDTIMEO, &timeout, sizeof(timeout)) < 0)
+	{
+		fprintf(stderr, "%s\n", strerror(errno));
+		close(sock);
+		exit(1);
+	}
+
+	if (connect(sock, (struct sockaddr *)&send_addr, sizeof(send_addr)) == -1)
+	{
+		fprintf(stderr, "%s\n", strerror(errno));
+		close(sock);
+		exit(1);
+	}
+
+	if (sendto(sock, NULL, 0, 0, (struct sockaddr *)&send_addr, sizeof(struct sockaddr)) == -1)
+	{
+		fprintf(stderr, "%s\n", strerror(errno));
+		close(sock);
+		exit(1);
+	}
+
+	close(sock);
+}
+
+static void *thread_start(void *arg)
+{
+	(void)arg;
+	send_to_tcp_port();
+
+	return NULL;
 }
 
 void tcp_test_port(pcap_t **handle_pcap)
 {
 	u_char user[BUFSIZ];
 
-	if (pcap_dispatch(*handle_pcap, 65535, pcap_handler_fn, user) == PCAP_ERROR)
+	pthread_t thread_id = {0};
+	int s = pthread_create(&thread_id, NULL, &thread_start, 0);
+
+	if (s == 0)
 	{
-		pcap_geterr(*handle_pcap);
-		exit(1);
+		if (pcap_dispatch(*handle_pcap, 65535, pcap_handler_fn, user) == PCAP_ERROR)
+		{
+			pcap_geterr(*handle_pcap);
+			exit(1);
+		}
 	}
 
-	send_to_tcp_port();
+	pthread_join(thread_id, NULL);
 }
 
 void tcp_tester()
@@ -152,7 +217,7 @@ void tcp_tester()
 	pcap_t *handle_pcap = NULL;
 
 	setup_record(&handle_pcap);
-	setup_record_filter(&handle_pcap, "80", "39582");
+	// setup_record_filter(&handle_pcap, "80", "39582");
 	tcp_test_port(&handle_pcap);
 
 	pcap_breakloop(handle_pcap);

@@ -13,7 +13,10 @@
 #include <bits/types.h>
 #include <netinet/in.h>
 #include <netinet/if_ether.h>
+#include <string.h>
 #include <arpa/inet.h>
+#include <netinet/tcp.h>	
+#include <netinet/ip.h>	
 #include <errno.h>
 #include "../libft/libft.h"
 
