@@ -1,6 +1,8 @@
 #include "./includes/ft_nmap.h"
 #include "./includes/struct.h"
 
+// u_char flags =  FIN | PSH | URG;
+
 void debug_print_full_packet(const struct pcap_pkthdr *header, const u_char *packet)
 {
 	fprintf(stdout, ANSI_COLOR_GREEN "full payload: [ 0x ");
@@ -56,10 +58,30 @@ void debug_print_tcp_flags(const u_char *tcp_header, int tcp_header_length, cons
 	}
 }
 
+short check_tcp_port_state(const u_char *tcp_header, u_char flags)
+{
+	if (flags == (FIN | PSH | URG))
+	{
+		printf("send flags : %hhu\n", flags);
+		printf("recv flags : %hhu\n", *(tcp_header + 13));
+		if (*(tcp_header + 13) & RST || *(tcp_header + 13) == 0 || *(tcp_header + 13) & FIN)
+		{
+			return CLOSE;
+		}
+		else
+		{
+			return OPEN | FILTERED;
+		}
+	}
+	return CLOSE;
+}
+
 void pcap_handler_fn(u_char *user, const struct pcap_pkthdr *header, const u_char *packet)
 {
 	(void)user;
 	(void)header;
+
+	printf("%c\n", user[0]);
 
 	const u_char *ip_header = NULL;
 	const u_char *tcp_header = NULL;
@@ -87,6 +109,12 @@ void pcap_handler_fn(u_char *user, const struct pcap_pkthdr *header, const u_cha
 
 	// debug_print_tcp_header(tcp_header, tcp_header_length);
 	debug_print_tcp_flags(tcp_header, tcp_header_length, packet);
+	u_char state = check_tcp_port_state(tcp_header, user[0]);
+
+	if (state == CLOSE)
+		printf("CLOSE\n");
+	else if (state == (OPEN | FILTERED))
+		printf("OPEN | FILTERED\n");
 
 	return;
 }
@@ -115,20 +143,23 @@ void setup_record(pcap_t **handle_pcap)
 
 void setup_record_filter(pcap_t **handle_pcap, char *port1, char *port2)
 {
+	(void)port1;
+	(void)port2;
 	struct bpf_program filter = {0};
-	char *filter_exp = ft_strjoin("tcp port ", port1);
-	char *tmp = ft_strjoin(filter_exp, " and tcp port ");
-	free(filter_exp);
-	filter_exp = ft_strjoin(tmp, port2);
-	free(tmp);
+	// char *filter_exp = ft_strjoin("tcp port ", port1);
+	// char *tmp = ft_strjoin(filter_exp, " and tcp port ");
+	// free(filter_exp);
+	// filter_exp = ft_strjoin(tmp, port2);
+	// free(tmp);
 
-	if (pcap_compile(*handle_pcap, &filter, filter_exp, 0, 0) == PCAP_ERROR || pcap_setfilter(*handle_pcap, &filter) == PCAP_ERROR)
+	// if (pcap_compile(*handle_pcap, &filter, filter_exp, 0, 0) == PCAP_ERROR || pcap_setfilter(*handle_pcap, &filter) == PCAP_ERROR)
+	if (pcap_compile(*handle_pcap, &filter, "tcp dst port 6675 and tcp src port 6677", 0, 0) == PCAP_ERROR || pcap_setfilter(*handle_pcap, &filter) == PCAP_ERROR)
 	{
 		pcap_geterr(*handle_pcap);
 		exit(1);
 	}
 
-	free(filter_exp);
+	// free(filter_exp);
 }
 
 unsigned short csum(unsigned short *ptr, int nbytes)
@@ -167,8 +198,8 @@ void init_ip_header(struct iphdr **iph, char *datagram, char *source_ip, in_addr
 	(*iph)->frag_off = 0;
 	(*iph)->ttl = 255;
 	(*iph)->protocol = IPPROTO_TCP;
-	(*iph)->check = 0;				
-	(*iph)->saddr = inet_addr(source_ip); 
+	(*iph)->check = 0;
+	(*iph)->saddr = inet_addr(source_ip);
 	(*iph)->daddr = s_addr;
 	(*iph)->check = csum((unsigned short *)datagram, (*iph)->tot_len);
 }
@@ -179,7 +210,7 @@ void init_tcp_header(struct tcphdr **tcph, int port_src, int port_dest, u_char f
 	(*tcph)->dest = htons(port_dest);
 	(*tcph)->seq = 0;
 	(*tcph)->ack_seq = 0;
-	(*tcph)->doff = 5; 
+	(*tcph)->doff = 5;
 	(*tcph)->fin = !!(flags & FIN);
 	(*tcph)->syn = !!(flags & SYN);
 	(*tcph)->rst = !!(flags & RST);
@@ -236,12 +267,26 @@ void init_tcp_packet(char *addr_src, int port_src, char *addr_dest, int port_des
 		exit(0);
 	}
 
+	struct timeval timeout = {0, 15000};
+	if (setsockopt(sock, SOL_SOCKET, SO_SNDTIMEO, &timeout, sizeof(timeout)) < 0)
+	{
+		perror("setsockopt");
+		free(pseudogram);
+		close(sock);
+		exit(0);
+	}
+
 	if (sendto(sock, datagram, iph->tot_len, 0, (struct sockaddr *)&sin, sizeof(sin)) < 0)
 	{
 		free(pseudogram);
 		close(sock);
 		perror("sendto failed");
 	}
+
+	socklen_t size = 0;
+	int rtn = recvfrom(sock, NULL, 0, 0, (struct sockaddr *)&sin, &size);
+	printf("recv rtn: %d\n", rtn);
+	printf("-----------\n");
 
 	free(pseudogram);
 	close(sock);
@@ -263,6 +308,7 @@ static void *thread_start(void *arg)
 void tcp_test_port(pcap_t **handle_pcap)
 {
 	u_char user[BUFSIZ];
+	user[0] = FIN | PSH | URG;
 
 	pthread_t thread_id = {0};
 	int s = pthread_create(&thread_id, NULL, &thread_start, 0);

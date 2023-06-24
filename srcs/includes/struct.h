@@ -24,6 +24,13 @@ enum e_tcp_flags
 	FIN = 1
 };
 
+enum e_port_state
+{
+	FILTERED = 1,
+	OPEN = 2,
+	CLOSE = 4
+};
+
 struct pseudo_header
 {
 	u_int32_t source_address;
