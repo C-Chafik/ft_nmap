@@ -4,6 +4,7 @@ RUN 	apt-get -y update; \
 	apt-get -y install nmap;  \
  	apt-get -y install make; \
     apt-get -y install gcc; \
+    apt-get -y install valgrind; \
 	apt-get -y install libpcap-dev
 
 
