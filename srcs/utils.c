@@ -15,6 +15,7 @@ void print_parsing_results(t_context *context)
 	{
 		for (int i = 0; i < context->port_count; i++)
 			printf(" | %d", context->ports[i]);
+		printf(" | PORTS COUNTS -> %d", context->port_count);
 	}
 	printf("\n");
 	printf("THREAD_COUNT :\n");

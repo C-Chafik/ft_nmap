@@ -135,6 +135,9 @@ void sort_and_tag_duplicate(int *tab, int len)
 
 int parse_ports(t_context *context, char *av)
 {
+    if (context->ports) // Free the default ports
+        free(context->ports);
+
     char **raw_ports = ft_split(av, ',');
     if (!raw_ports)
     {
@@ -437,9 +440,9 @@ static int check_arguments(t_context *context, int ac, char **av)
 
 int check_results(t_context *context)
 {
-    if (!context->ports)
+    if (context->port_count > 1024)
     {
-        fprintf(stderr, "No port to map were given.\n");
+        fprintf(stderr, "The number of port to scan cannot exceed 1024.\n");
         return -1;
     }
     else if (!context->hostnames)
