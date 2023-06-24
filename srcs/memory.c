@@ -1,10 +1,10 @@
 #include "./includes/ft_nmap.h"
 
-void free_tab(char **d_ptr) 
+void free_tab(char **d_ptr)
 {
-    if (d_ptr) 
+    if (d_ptr)
     {
-        for (int i = 0; d_ptr[i] != NULL; ++i) 
+        for (int i = 0; d_ptr[i] != NULL; ++i)
         {
             free(d_ptr[i]);
         }
