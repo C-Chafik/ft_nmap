@@ -15,9 +15,11 @@
 #include <netinet/if_ether.h>
 #include <string.h>
 #include <arpa/inet.h>
-#include <netinet/tcp.h>	
-#include <netinet/ip.h>	
+#include <netinet/tcp.h>
+#include <netinet/ip.h>
 #include <errno.h>
+#include <sys/types.h>
+#include <ifaddrs.h>
 #include "../libft/libft.h"
 
 #endif
