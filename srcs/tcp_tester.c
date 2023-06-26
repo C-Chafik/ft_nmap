@@ -60,10 +60,8 @@ void debug_print_tcp_flags(const u_char *tcp_header, int tcp_header_length, cons
 
 short check_tcp_port_state(const u_char *tcp_header, u_char flags)
 {
-	if (flags == (FIN | PSH | URG))
+	if (flags == (FIN | PSH | URG)) // XMAS
 	{
-		printf("send flags : %hhu\n", flags);
-		printf("recv flags : %hhu\n", *(tcp_header + 13));
 		if (*(tcp_header + 13) & RST || *(tcp_header + 13) == 0 || *(tcp_header + 13) & FIN)
 		{
 			return CLOSE;
@@ -80,8 +78,6 @@ void pcap_handler_fn(u_char *user, const struct pcap_pkthdr *header, const u_cha
 {
 	(void)user;
 	(void)header;
-
-	printf("%c\n", user[0]);
 
 	const u_char *ip_header = NULL;
 	const u_char *tcp_header = NULL;
@@ -112,9 +108,9 @@ void pcap_handler_fn(u_char *user, const struct pcap_pkthdr *header, const u_cha
 	u_char state = check_tcp_port_state(tcp_header, user[0]);
 
 	if (state == CLOSE)
-		printf("CLOSE\n");
+		printf(ANSI_COLOR_MAGENTA "CLOSE\n" ANSI_COLOR_RESET);
 	else if (state == (OPEN | FILTERED))
-		printf("OPEN | FILTERED\n");
+		printf(ANSI_COLOR_MAGENTA "OPEN | FILTERED\n" ANSI_COLOR_RESET);
 
 	return;
 }
@@ -153,7 +149,7 @@ void setup_record_filter(pcap_t **handle_pcap, char *port1, char *port2)
 	// free(tmp);
 
 	// if (pcap_compile(*handle_pcap, &filter, filter_exp, 0, 0) == PCAP_ERROR || pcap_setfilter(*handle_pcap, &filter) == PCAP_ERROR)
-	if (pcap_compile(*handle_pcap, &filter, "tcp dst port 6675 and tcp src port 6677", 0, 0) == PCAP_ERROR || pcap_setfilter(*handle_pcap, &filter) == PCAP_ERROR)
+	if (pcap_compile(*handle_pcap, &filter,  "tcp dst port 6675 and tcp src port 6677", 0, 0) == PCAP_ERROR || pcap_setfilter(*handle_pcap, &filter) == PCAP_ERROR)
 	{
 		pcap_geterr(*handle_pcap);
 		exit(1);
@@ -222,85 +218,90 @@ void init_tcp_header(struct tcphdr **tcph, int port_src, int port_dest, u_char f
 	(*tcph)->urg_ptr = 0;
 }
 
-void init_tcp_packet(char *addr_src, int port_src, char *addr_dest, int port_dest)
+typedef struct tcp_vars
 {
-	char datagram[4096], source_ip[32], *pseudogram;
-	ft_bzero(datagram, 4096);
-
-	int sock = socket(AF_INET, SOCK_RAW, IPPROTO_TCP);
-	struct iphdr *iph = (struct iphdr *)datagram;
-	struct tcphdr *tcph = (struct tcphdr *)(datagram + sizeof(struct ip));
-
+	char datagram[4096];
+	char source_ip[32];
+	char *pseudogram;
+	struct iphdr *iph;
+	struct tcphdr *tcph;
 	struct sockaddr_in sin;
 	struct pseudo_header psh;
+	int psize;
+	int sock;
+} t_tcp_vars;
 
-	ft_strlcpy(source_ip, addr_src, 11);
-	sin.sin_family = AF_INET;
-	sin.sin_port = htons(port_dest);
-	sin.sin_addr.s_addr = inet_addr(addr_dest);
 
-	init_ip_header(&iph, datagram, source_ip, sin.sin_addr.s_addr);
-	init_tcp_header(&tcph, port_src, port_dest, FIN | PSH | URG);
+t_tcp_vars init_tcp_packet(char *addr_src, int port_src, char *addr_dest, int port_dest, u_char flags)
+{
+	t_tcp_vars tcp_vars = {0};
+	ft_bzero(tcp_vars.datagram, 4096);
 
-	psh.source_address = inet_addr(source_ip);
-	psh.dest_address = sin.sin_addr.s_addr;
-	psh.placeholder = 0;
-	psh.protocol = IPPROTO_TCP;
-	psh.tcp_length = htons(sizeof(struct tcphdr));
+	tcp_vars.sock = socket(AF_INET, SOCK_RAW, IPPROTO_TCP);
+	tcp_vars.iph = (struct iphdr *)tcp_vars.datagram;
+	tcp_vars.tcph = (struct tcphdr *)(tcp_vars.datagram + sizeof(struct ip));
 
-	int psize = sizeof(struct pseudo_header) + sizeof(struct tcphdr);
-	pseudogram = malloc(psize);
+	ft_strlcpy(tcp_vars.source_ip, addr_src, 11);
+	tcp_vars.sin.sin_family = AF_INET;
+	tcp_vars.sin.sin_port = htons(port_dest);
+	tcp_vars.sin.sin_addr.s_addr = inet_addr(addr_dest);
 
-	memcpy(pseudogram, (char *)&psh, sizeof(struct pseudo_header));
-	memcpy(pseudogram + sizeof(struct pseudo_header), tcph, sizeof(struct tcphdr));
+	init_ip_header(&tcp_vars.iph, tcp_vars.datagram, tcp_vars.source_ip, tcp_vars.sin.sin_addr.s_addr);
+	init_tcp_header(&tcp_vars.tcph, port_src, port_dest, flags);
 
-	tcph->check = csum((unsigned short *)pseudogram, psize);
+	tcp_vars.psh.source_address = inet_addr(tcp_vars.source_ip);
+	tcp_vars.psh.dest_address = tcp_vars.sin.sin_addr.s_addr;
+	tcp_vars.psh.placeholder = 0;
+	tcp_vars.psh.protocol = IPPROTO_TCP;
+	tcp_vars.psh.tcp_length = htons(sizeof(struct tcphdr));
+
+	tcp_vars.psize = sizeof(struct pseudo_header) + sizeof(struct tcphdr);
+	tcp_vars.pseudogram = malloc(tcp_vars.psize);
+
+	memcpy(tcp_vars.pseudogram, (char *)&tcp_vars.psh, sizeof(struct pseudo_header));
+	memcpy(tcp_vars.pseudogram + sizeof(struct pseudo_header), tcp_vars.tcph, sizeof(struct tcphdr));
+
+	tcp_vars.tcph->check = csum((unsigned short *)tcp_vars.pseudogram, tcp_vars.psize);
 
 	int one = 1;
 	const int *val = &one;
 
-	if (setsockopt(sock, IPPROTO_IP, IP_HDRINCL, val, sizeof(one)) < 0)
+	if (setsockopt(tcp_vars.sock, IPPROTO_IP, IP_HDRINCL, val, sizeof(one)) < 0)
 	{
 		perror("Error setting IP_HDRINCL");
-		free(pseudogram);
-		close(sock);
+		free(tcp_vars.pseudogram);
+		close(tcp_vars.sock);
 		exit(0);
 	}
 
+	return tcp_vars;
+}
+
+void send_tcp_packet(t_tcp_vars tcp_vars){
 	struct timeval timeout = {0, 15000};
-	if (setsockopt(sock, SOL_SOCKET, SO_SNDTIMEO, &timeout, sizeof(timeout)) < 0)
+	if (setsockopt(tcp_vars.sock, SOL_SOCKET, SO_SNDTIMEO, &timeout, sizeof(timeout)) < 0)
 	{
 		perror("setsockopt");
-		free(pseudogram);
-		close(sock);
+		free(tcp_vars.pseudogram);
+		close(tcp_vars.sock);
 		exit(0);
 	}
 
-	if (sendto(sock, datagram, iph->tot_len, 0, (struct sockaddr *)&sin, sizeof(sin)) < 0)
+	if (sendto(tcp_vars.sock, tcp_vars.datagram, tcp_vars.iph->tot_len, 0, (struct sockaddr *)&tcp_vars.sin, sizeof(tcp_vars.sin)) < 0)
 	{
-		free(pseudogram);
-		close(sock);
+		free(tcp_vars.pseudogram);
+		close(tcp_vars.sock);
 		perror("sendto failed");
 	}
 
-	socklen_t size = 0;
-	int rtn = recvfrom(sock, NULL, 0, 0, (struct sockaddr *)&sin, &size);
-	printf("recv rtn: %d\n", rtn);
-	printf("-----------\n");
-
-	free(pseudogram);
-	close(sock);
-}
-
-void send_to_tcp_port()
-{
-	init_tcp_packet("172.17.0.2", 6675, "172.17.0.3", 6677);
+	free(tcp_vars.pseudogram);
+	close(tcp_vars.sock);
 }
 
 static void *thread_start(void *arg)
 {
-	(void)arg;
-	send_to_tcp_port();
+	t_tcp_vars tcp_vars = init_tcp_packet("172.17.0.2", 6675, "172.17.0.3", 6677, ((u_char *)arg)[0]);
+	send_tcp_packet(tcp_vars);
 
 	return NULL;
 }
@@ -311,20 +312,18 @@ void tcp_test_port(pcap_t **handle_pcap)
 	user[0] = FIN | PSH | URG;
 
 	pthread_t thread_id = {0};
-	int s = pthread_create(&thread_id, NULL, &thread_start, 0);
-
-	if (s == 0)
+	if (pthread_create(&thread_id, NULL, &thread_start, user) != 0)
+		return;
+	
+	if (pcap_dispatch(*handle_pcap, 65535, pcap_handler_fn, user) == PCAP_ERROR)
 	{
-		if (pcap_dispatch(*handle_pcap, 65535, pcap_handler_fn, user) == PCAP_ERROR)
-		{
-			pcap_geterr(*handle_pcap);
-			pcap_breakloop(*handle_pcap);
-			pcap_close(*handle_pcap);
-			exit(1);
-		}
+		pcap_geterr(*handle_pcap);
 		pcap_breakloop(*handle_pcap);
 		pcap_close(*handle_pcap);
+		exit(1);
 	}
+	pcap_breakloop(*handle_pcap);
+	pcap_close(*handle_pcap);
 
 	pthread_join(thread_id, NULL);
 }
