@@ -17,4 +17,6 @@ void	ft_sort_int_tab(int *tab, int size);
 
 void    free_context(t_context *context);
 
+void    udp_tester(t_context *context);
+
 #endif
