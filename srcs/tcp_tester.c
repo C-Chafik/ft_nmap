@@ -1,7 +1,6 @@
 #include "./includes/ft_nmap.h"
 #include "./includes/struct.h"
 
-// u_char flags =  FIN | PSH | URG;
 
 void debug_print_full_packet(const struct pcap_pkthdr *header, const u_char *packet)
 {
@@ -60,18 +59,20 @@ void debug_print_tcp_flags(const u_char *tcp_header, int tcp_header_length, cons
 
 short check_tcp_port_state(const u_char *tcp_header, u_char flags)
 {
-	if (flags == (FIN | PSH | URG)) // XMAS
-	{
-		if (*(tcp_header + 13) & RST || *(tcp_header + 13) == 0 || *(tcp_header + 13) & FIN)
-		{
+	if (flags == N_XMAS || flags == N_NULL || flags == N_FIN){
+		if (*(tcp_header + 13) & RST)
 			return CLOSE;
-		}
-		else
-		{
-			return OPEN | FILTERED;
-		}
 	}
-	return CLOSE;
+	else if (flags == N_SYN){
+		printf("%d\n", !!(flags));
+		printf("%d\n", !!(flags & RST));
+		if (*(tcp_header + 13) == (SYN | ACK))
+			return OPEN;
+		else if (*(tcp_header + 13))
+			return CLOSE;
+	}
+
+	return FILTERED;
 }
 
 void pcap_handler_fn(u_char *user, const struct pcap_pkthdr *header, const u_char *packet)
@@ -104,15 +105,12 @@ void pcap_handler_fn(u_char *user, const struct pcap_pkthdr *header, const u_cha
 	tcp_header_length = tcp_header_length * 4;
 
 	// debug_print_tcp_header(tcp_header, tcp_header_length);
+	if (htons(*(unsigned *)(packet + 34)) != ((unsigned*)user)[4])
+		return;
 	debug_print_tcp_flags(tcp_header, tcp_header_length, packet);
-	u_char state = check_tcp_port_state(tcp_header, user[0]);
+	user[1] = check_tcp_port_state(tcp_header, user[0]);
 
-	if (state == CLOSE)
-		printf(ANSI_COLOR_MAGENTA "CLOSE\n" ANSI_COLOR_RESET);
-	else if (state == (OPEN | FILTERED))
-		printf(ANSI_COLOR_MAGENTA "OPEN | FILTERED\n" ANSI_COLOR_RESET);
-
-	return;
+	return; 
 }
 
 void setup_record(pcap_t **handle_pcap)
@@ -149,7 +147,7 @@ void setup_record_filter(pcap_t **handle_pcap, char *port1, char *port2)
 	// free(tmp);
 
 	// if (pcap_compile(*handle_pcap, &filter, filter_exp, 0, 0) == PCAP_ERROR || pcap_setfilter(*handle_pcap, &filter) == PCAP_ERROR)
-	if (pcap_compile(*handle_pcap, &filter,  "tcp dst port 6675 and tcp src port 6677", 0, 0) == PCAP_ERROR || pcap_setfilter(*handle_pcap, &filter) == PCAP_ERROR)
+	if (pcap_compile(*handle_pcap, &filter, "tcp port 6677", 0, 0) == PCAP_ERROR || pcap_setfilter(*handle_pcap, &filter) == PCAP_ERROR)
 	{
 		pcap_geterr(*handle_pcap);
 		exit(1);
@@ -195,14 +193,16 @@ void init_ip_header(struct iphdr **iph, char *datagram, char *source_ip, in_addr
 	(*iph)->ttl = 255;
 	(*iph)->protocol = IPPROTO_TCP;
 	(*iph)->check = 0;
-	(*iph)->saddr = inet_addr(source_ip);
+	(void)source_ip;
+	// (*iph)->saddr = inet_addr(source_ip);
 	(*iph)->daddr = s_addr;
 	(*iph)->check = csum((unsigned short *)datagram, (*iph)->tot_len);
 }
 
 void init_tcp_header(struct tcphdr **tcph, int port_src, int port_dest, u_char flags)
 {
-	(*tcph)->source = htons(port_src);
+	(void)port_src;
+	// (*tcph)->source = htons(port_src);
 	(*tcph)->dest = htons(port_dest);
 	(*tcph)->seq = 0;
 	(*tcph)->ack_seq = 0;
@@ -230,7 +230,6 @@ typedef struct tcp_vars
 	int psize;
 	int sock;
 } t_tcp_vars;
-
 
 t_tcp_vars init_tcp_packet(char *addr_src, int port_src, char *addr_dest, int port_dest, u_char flags)
 {
@@ -277,7 +276,8 @@ t_tcp_vars init_tcp_packet(char *addr_src, int port_src, char *addr_dest, int po
 	return tcp_vars;
 }
 
-void send_tcp_packet(t_tcp_vars tcp_vars){
+void send_tcp_packet(t_tcp_vars tcp_vars)
+{
 	struct timeval timeout = {0, 15000};
 	if (setsockopt(tcp_vars.sock, SOL_SOCKET, SO_SNDTIMEO, &timeout, sizeof(timeout)) < 0)
 	{
@@ -298,34 +298,47 @@ void send_tcp_packet(t_tcp_vars tcp_vars){
 	close(tcp_vars.sock);
 }
 
-static void *thread_start(void *arg)
-{
-	t_tcp_vars tcp_vars = init_tcp_packet("172.17.0.2", 6675, "172.17.0.3", 6677, ((u_char *)arg)[0]);
-	send_tcp_packet(tcp_vars);
-
-	return NULL;
-}
-
 void tcp_test_port(pcap_t **handle_pcap)
 {
 	u_char user[BUFSIZ];
-	user[0] = FIN | PSH | URG;
+	user[0] = N_NULL;
+	((unsigned*)user)[4] = 6677;//! make dst port dynamic 
 
-	pthread_t thread_id = {0};
-	if (pthread_create(&thread_id, NULL, &thread_start, user) != 0)
-		return;
-	
-	if (pcap_dispatch(*handle_pcap, 65535, pcap_handler_fn, user) == PCAP_ERROR)
+	/*
+		TODO | remove ip src et port src
+		TODO | make port dynamic
+		TODO | make ip dynamic (find which interface use by default)
+	*/ 
+	t_tcp_vars tcp_vars = init_tcp_packet("172.17.0.2", 6675, "172.17.0.3", 6677, user[0]);
+	send_tcp_packet(tcp_vars);
+
+	int rtn = pcap_dispatch(*handle_pcap, 65535, pcap_handler_fn, user) ;
+
+	if (rtn == PCAP_ERROR)
 	{
 		pcap_geterr(*handle_pcap);
 		pcap_breakloop(*handle_pcap);
 		pcap_close(*handle_pcap);
 		exit(1);
 	}
+	else if (rtn == 1){//* TIMEOUT
+		if (user[0] == N_XMAS || user[0] == N_FIN || user[0] == N_NULL)
+			printf(ANSI_COLOR_MAGENTA "OPEN | FILTERED\n" ANSI_COLOR_RESET);
+		if (user[0] == N_SYN)
+			printf(ANSI_COLOR_MAGENTA "FILTERED\n" ANSI_COLOR_RESET);
+	}
+	else {
+		if (user[1] == CLOSE){
+			printf(ANSI_COLOR_MAGENTA "CLOSE\n" ANSI_COLOR_RESET);
+		
+		}
+		else if (user[1] == OPEN){
+			printf(ANSI_COLOR_MAGENTA "OPEN\n" ANSI_COLOR_RESET);
+		}
+	}
+
 	pcap_breakloop(*handle_pcap);
 	pcap_close(*handle_pcap);
-
-	pthread_join(thread_id, NULL);
 }
 
 void tcp_tester()

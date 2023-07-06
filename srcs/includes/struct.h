@@ -24,6 +24,15 @@ enum e_tcp_flags
 	FIN = 1
 };
 
+enum e_nmap_flags{
+	N_NULL = 0,
+	N_SYN = SYN,
+	N_ACK = ACK,
+	N_FIN = FIN,
+	N_XMAS = (FIN | PSH | URG),
+	N_UDP
+};
+
 enum e_port_state
 {
 	FILTERED = 1,

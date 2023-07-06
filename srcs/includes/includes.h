@@ -18,6 +18,7 @@
 #include <netinet/tcp.h>	
 #include <netinet/ip.h>	
 #include <errno.h>
+#include <poll.h>
 #include "../libft/libft.h"
 
 #endif
