@@ -301,7 +301,7 @@ void send_tcp_packet(t_tcp_vars tcp_vars)
 void tcp_test_port(pcap_t **handle_pcap)
 {
 	u_char user[BUFSIZ];
-	user[0] = N_NULL;
+	user[0] = N_ACK; //*SEND FLAG
 	((unsigned*)user)[4] = 6677;//! make dst port dynamic 
 
 	/*
@@ -314,6 +314,8 @@ void tcp_test_port(pcap_t **handle_pcap)
 
 	int rtn = pcap_dispatch(*handle_pcap, 65535, pcap_handler_fn, user) ;
 
+	printf("rtn: %d\n", rtn);
+
 	if (rtn == PCAP_ERROR)
 	{
 		pcap_geterr(*handle_pcap);
@@ -324,16 +326,18 @@ void tcp_test_port(pcap_t **handle_pcap)
 	else if (rtn == 1){//* TIMEOUT
 		if (user[0] == N_XMAS || user[0] == N_FIN || user[0] == N_NULL)
 			printf(ANSI_COLOR_MAGENTA "OPEN | FILTERED\n" ANSI_COLOR_RESET);
-		if (user[0] == N_SYN)
+		if (user[0] == N_SYN || user[0] == N_ACK)
 			printf(ANSI_COLOR_MAGENTA "FILTERED\n" ANSI_COLOR_RESET);
 	}
 	else {
-		if (user[1] == CLOSE){
-			printf(ANSI_COLOR_MAGENTA "CLOSE\n" ANSI_COLOR_RESET);
-		
+		if (user[0]  == N_ACK){
+			printf(ANSI_COLOR_MAGENTA "UNFILTERED\n" ANSI_COLOR_RESET);
 		}
-		else if (user[1] == OPEN){
-			printf(ANSI_COLOR_MAGENTA "OPEN\n" ANSI_COLOR_RESET);
+		else{
+			if (user[1] == CLOSE)
+				printf(ANSI_COLOR_MAGENTA "CLOSE\n" ANSI_COLOR_RESET);
+			else if (user[1] == OPEN)
+				printf(ANSI_COLOR_MAGENTA "OPEN\n" ANSI_COLOR_RESET);
 		}
 	}
 
