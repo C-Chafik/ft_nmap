@@ -64,8 +64,6 @@ short check_tcp_port_state(const u_char *tcp_header, u_char flags)
 			return CLOSE;
 	}
 	else if (flags == N_SYN){
-		printf("%d\n", !!(flags));
-		printf("%d\n", !!(flags & RST));
 		if (*(tcp_header + 13) == (SYN | ACK))
 			return OPEN;
 		else if (*(tcp_header + 13))
@@ -105,9 +103,9 @@ void pcap_handler_fn(u_char *user, const struct pcap_pkthdr *header, const u_cha
 	tcp_header_length = tcp_header_length * 4;
 
 	// debug_print_tcp_header(tcp_header, tcp_header_length);
+	debug_print_tcp_flags(tcp_header, tcp_header_length, packet);
 	if (htons(*(unsigned *)(packet + 34)) != ((unsigned*)user)[4])
 		return;
-	debug_print_tcp_flags(tcp_header, tcp_header_length, packet);
 	user[1] = check_tcp_port_state(tcp_header, user[0]);
 
 	return; 
@@ -124,7 +122,7 @@ void setup_record(pcap_t **handle_pcap)
 		exit(1);
 	}
 
-	*handle_pcap = pcap_open_live(devs->name, BUFSIZ, 0, 1500, errbuf);
+	*handle_pcap = pcap_open_live(/*devs->name*/"eth0", BUFSIZ, 0, 1500, errbuf);//! choose interface
 	if (!*handle_pcap)
 	{
 		fprintf(stderr, "%s\n", errbuf);
@@ -314,8 +312,6 @@ void tcp_test_port(pcap_t **handle_pcap)
 
 	int rtn = pcap_dispatch(*handle_pcap, 65535, pcap_handler_fn, user) ;
 
-	printf("rtn: %d\n", rtn);
-
 	if (rtn == PCAP_ERROR)
 	{
 		pcap_geterr(*handle_pcap);
@@ -353,3 +349,12 @@ void tcp_tester()
 	setup_record_filter(&handle_pcap, "6675", "6677");
 	tcp_test_port(&handle_pcap);
 }
+
+/*
+	Pour filter et unfilter les ports d'un container:
+	- run le container en briged avec:
+		`--cap-add=NET_ADMIN`
+	- utiliser les commandes suivantes dans le container:
+		`iptables -P INPUT DROP`
+		`iptables -P INPUT ALLOW`
+*/
