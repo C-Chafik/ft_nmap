@@ -21,7 +21,7 @@ static int *init_default_ports(int port_count)
         perror("Couldn't allocate memory to ports\n");
         exit(EXIT_FAILURE);
     }
-    for (int i = 0; i <= port_count; i++)
+    for (int i = 0; i < port_count; i++)
         ports[i] = i + 1;
 
     return ports;
