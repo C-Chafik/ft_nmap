@@ -366,7 +366,7 @@ static int parse_arguments(t_context *context, char **av, int *i)
         return parse_ip(context, av[*i + 1]);
     else
     {
-        fprintf(stderr, "ft_nmap: unrecognized option '%s'", av[*i]);
+        fprintf(stderr, "ft_nmap: unrecognized option '%s'\n", av[*i]);
         return -1;
     }
 
@@ -425,7 +425,7 @@ static int check_arguments(t_context *context, int ac, char **av)
         }
         else if (check_arguments_validity(av[i]) == -1)
         {
-            fprintf(stderr, "ft_nmap: unrecognized option '%s'", av[i]);
+            fprintf(stderr, "ft_nmap: unrecognized option '%s'\n", av[i]);
             return -1;
         }
         else
