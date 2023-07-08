@@ -50,11 +50,14 @@ int main(int ac, char **av)
     init_context(&context);
 
     exit_code = init_parsing(&context, ac, av);
-    if (exit_code > 0)
+    if (exit_code < 0)
     {
         free_context(&context);
+        printf("HRELLOc\n");
         return exit_code;
     }
+
+    printf("%d\n", exit_code);
 
     tcp_tester();
     // print_parsing_results(&context);
