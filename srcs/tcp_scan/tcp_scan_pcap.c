@@ -52,7 +52,21 @@ void setup_record(pcap_t **handle_pcap)
 		exit(1);
 	}
 
-	*handle_pcap = pcap_open_live(/*devs->name*/"eth0", BUFSIZ, 0, 1500, errbuf);//! choose interface
+	char *name = NULL;
+
+	for (pcap_if_t *tmp = devs; tmp != NULL; tmp = tmp->next){
+		if (tmp->flags != PCAP_IF_LOOPBACK){
+			name = tmp->name;
+			break;
+		}
+	}
+
+	if (!name){
+		fprintf(stderr, "No (none loopback) interfaces\n");
+		exit(1);
+	}
+
+	*handle_pcap = pcap_open_live(name, BUFSIZ, 0, 1500, errbuf);//! choose interface
 	if (!*handle_pcap)
 	{
 		fprintf(stderr, "%s\n", errbuf);
@@ -63,23 +77,16 @@ void setup_record(pcap_t **handle_pcap)
 	pcap_freealldevs(devs);
 }
 
-void setup_record_filter(pcap_t **handle_pcap, char *port1, char *port2)
+void setup_record_filter(pcap_t **handle_pcap, char *port)
 {
-	(void)port1;
-	(void)port2;
 	struct bpf_program filter = {0};
-	// char *filter_exp = ft_strjoin("tcp port ", port1);
-	// char *tmp = ft_strjoin(filter_exp, " and tcp port ");
-	// free(filter_exp);
-	// filter_exp = ft_strjoin(tmp, port2);
-	// free(tmp);
+	char *filter_exp = ft_strjoin("tcp port ", port);
 
-	// if (pcap_compile(*handle_pcap, &filter, filter_exp, 0, 0) == PCAP_ERROR || pcap_setfilter(*handle_pcap, &filter) == PCAP_ERROR)
-	if (pcap_compile(*handle_pcap, &filter, "tcp port 6677", 0, 0) == PCAP_ERROR || pcap_setfilter(*handle_pcap, &filter) == PCAP_ERROR)
+	if (pcap_compile(*handle_pcap, &filter, filter_exp, 0, 0) == PCAP_ERROR || pcap_setfilter(*handle_pcap, &filter) == PCAP_ERROR)
 	{
 		pcap_geterr(*handle_pcap);
 		exit(1);
 	}
 
-	// free(filter_exp);
+	free(filter_exp);
 }

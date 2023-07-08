@@ -32,10 +32,10 @@ void send_tcp_packet(t_tcp_vars tcp_vars);
 
 void pcap_handler_fn(u_char *user, const struct pcap_pkthdr *header, const u_char *packet);
 void setup_record(pcap_t **handle_pcap);
-void setup_record_filter(pcap_t **handle_pcap, char *port1, char *port2);
+void setup_record_filter(pcap_t **handle_pcap, char *port);
 
 short check_tcp_port_state(const u_char *tcp_header, u_char flags);
-void tcp_test_port(pcap_t **handle_pcap);
+void tcp_test_port(pcap_t **handle_pcap, int port);
 
 
 

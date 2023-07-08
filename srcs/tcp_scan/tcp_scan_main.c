@@ -2,13 +2,16 @@
 #include "../includes/includes.h"
 #include "../includes/define.h"
 
-void tcp_tester()
+void tcp_tester(t_context *context)
 {
 	pcap_t *handle_pcap = NULL;
+    print_parsing_results(context);
 
-	setup_record(&handle_pcap);
-	setup_record_filter(&handle_pcap, "6675", "6677");
-	tcp_test_port(&handle_pcap);
+	for (int i = 0; i < context->port_count; i++){
+		setup_record(&handle_pcap);
+		setup_record_filter(&handle_pcap, ft_itoa(context->ports[i]));
+		tcp_test_port(&handle_pcap, context->ports[i]);
+	}
 }
 
 /*
