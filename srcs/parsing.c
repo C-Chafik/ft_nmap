@@ -136,7 +136,10 @@ void sort_and_tag_duplicate(int *tab, int len)
 int parse_ports(t_context *context, char *av)
 {
     if (context->ports) // Free the default ports
+    {
         free(context->ports);
+        context->ports = NULL;
+    }
 
     char **raw_ports = ft_split(av, ',');
     if (!raw_ports)
