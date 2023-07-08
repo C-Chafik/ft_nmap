@@ -63,6 +63,19 @@ typedef struct s_target
 	char *hostname;
 } t_target;
 
+typedef struct tcp_vars
+{
+	char datagram[4096];
+	char source_ip[32];
+	char *pseudogram;
+	struct iphdr *iph;
+	struct tcphdr *tcph;
+	struct sockaddr_in sin;
+	struct pseudo_header psh;
+	int psize;
+	int sock;
+} t_tcp_vars;
+
 typedef struct s_context
 {
 	t_target *targets;		// All the host to configuration

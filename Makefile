@@ -5,7 +5,12 @@ SRCS =	./srcs/main.c \
 		./srcs/udp_tester.c \
 		./srcs/get_next_line/get_next_line.c \
 		./srcs/get_next_line/get_next_line_utils.c \
-		./srcs/tcp_tester.c \
+		./srcs/tcp_scan_main.c \
+		./srcs/tcp_scan_debug.c \
+		./srcs/tcp_scan_headers.c \
+		./srcs/tcp_scan_packet_sender.c \
+		./srcs/tcp_scan_pcap.c \
+		./srcs/tcp_scan_state.c \
 
 OBJS =	${SRCS:.c=.o}
 
