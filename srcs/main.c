@@ -25,23 +25,23 @@ static void init_context(t_context *context)
 
 int main(int ac, char **av)
 {
-    t_context   context;
-    int         exit_code;
+    t_context context;
+    int exit_code;
 
-    if ( ac < 2 )
+    if (ac < 2)
         return EXIT_FAILURE;
 
     init_context(&context);
 
     exit_code = init_parsing(&context, ac, av);
-    if (exit_code < 0)
+    if (exit_code > 0)
     {
         free_context(&context);
-        return EXIT_FAILURE;
+        return exit_code;
     }
 
-    // print_parsing_results(&context);
+    tcp_tester();
 
     free_context(&context);
-    return EXIT_SUCCESS;
+    return 0;
 }

@@ -4,6 +4,7 @@ SRCS =	./srcs/main.c \
 		./srcs/memory.c \
 		./srcs/get_next_line/get_next_line.c \
 		./srcs/get_next_line/get_next_line_utils.c \
+		./srcs/tcp_tester.c \
 
 OBJS =	${SRCS:.c=.o}
 
@@ -26,7 +27,7 @@ all: $(NAME)
 
 $(NAME): $(OBJS)
 	make -C ./srcs/libft
-	$(CC) $(CFLAGS) $(PTHREADFLAG) -g3 $(OBJS) ./srcs/libft/libft.a -o $(NAME)
+	$(CC) $(CFLAGS) $(PTHREADFLAG) $(PCAPFLAG) -g3 $(OBJS) ./srcs/libft/libft.a -o $(NAME)
 
 clean:
 	$(RM) $(OBJS)

@@ -1,9 +1,16 @@
 FROM debian:buster
 
-RUN 	apt-get -y update; \
+RUN 	apt-get update; \
 	apt-get -y install nmap;  \
  	apt-get -y install make; \
     apt-get -y install gcc; \
+    apt-get -y install valgrind; \
+    apt-get -y install netcat; \
+    apt-get -y install tmux; \
+    apt-get -y install tcpdump; \
+    apt-get -y install netcat; \
+    apt-get -y install ufw; \
+    apt-get -y install wget; \
 	apt-get -y install libpcap-dev
 
 

@@ -1,0 +1,16 @@
+{
+    "files.associations": {
+        "define.h": "c",
+        "ft_nmap.h": "c",
+        "signal.h": "c",
+        "pthread.h": "c",
+        "ip_icmp.h": "c",
+        "ethernet.h": "c",
+        "includes.h": "c",
+        "stdlib.h": "c",
+        "libft.h": "c",
+        "get_next_line.h": "c",
+        "if_ether.h": "c",
+        "struct.h": "c"
+    }
+}
