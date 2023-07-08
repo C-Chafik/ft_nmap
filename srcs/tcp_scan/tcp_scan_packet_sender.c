@@ -1,6 +1,6 @@
-#include "./includes/ft_nmap.h"
-#include "./includes/includes.h"
-#include "./includes/define.h"
+#include "../includes/ft_nmap.h"
+#include "../includes/includes.h"
+#include "../includes/define.h"
 
 t_tcp_vars init_tcp_packet(char *addr_src, int port_src, char *addr_dest, int port_dest, u_char flags)
 {

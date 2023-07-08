@@ -1,6 +1,7 @@
-#include "./includes/ft_nmap.h"
-#include "./includes/includes.h"
-#include "./includes/define.h"
+#include "../includes/ft_nmap.h"
+#include "../includes/includes.h"
+#include "../includes/define.h"
+
 
 void debug_print_full_packet(const struct pcap_pkthdr *header, const u_char *packet)
 {

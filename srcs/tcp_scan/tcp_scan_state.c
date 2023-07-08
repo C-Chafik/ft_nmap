@@ -1,6 +1,7 @@
-#include "./includes/ft_nmap.h"
-#include "./includes/includes.h"
-#include "./includes/define.h"
+#include "../includes/ft_nmap.h"
+#include "../includes/includes.h"
+#include "../includes/define.h"
+
 
 short check_tcp_port_state(const u_char *tcp_header, u_char flags)
 {
