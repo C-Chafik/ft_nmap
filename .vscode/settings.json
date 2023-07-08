@@ -11,6 +11,7 @@
         "libft.h": "c",
         "get_next_line.h": "c",
         "if_ether.h": "c",
-        "struct.h": "c"
+        "struct.h": "c",
+        "poll.h": "c"
     }
 }

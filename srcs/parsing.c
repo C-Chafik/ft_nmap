@@ -7,14 +7,14 @@
 */
 
 /*
-Help Screen
-ft_nmap [OPTIONS]
---help Print this help screen
---ports ports to scan (eg: 1-10 or 1,2,3 or 1,5-15)
---ip ip addresses to scan in dot format
---file File name containing IP addresses to scan,
---speedup [250 max] number of parallel threads to use
---scan SYN/NULL/FIN/XMAS/ACK/UDP
+    Help Screen
+    ft_nmap [OPTIONS]
+    --help Print this help screen
+    --ports ports to scan (eg: 1-10 or 1,2,3 or 1,5-15)
+    --ip ip addresses to scan in dot format
+    --file File name containing IP addresses to scan,
+    --speedup [250 max] number of parallel threads to use
+    --scan SYN/NULL/FIN/XMAS/ACK/UDP
 */
 
 
@@ -85,7 +85,7 @@ static int count_ports(char *av)
                 free_tab(raw_ports);
                 return -1;
             }
-            
+
             // Check if the start and end ports are within valid range
             if (start < 0 || end < 0 || start > 65535 || end > 65535)
             {
@@ -135,6 +135,9 @@ void sort_and_tag_duplicate(int *tab, int len)
 
 int parse_ports(t_context *context, char *av)
 {
+    if (context->ports) // Free the default ports
+        free(context->ports);
+
     char **raw_ports = ft_split(av, ',');
     if (!raw_ports)
     {
@@ -205,7 +208,7 @@ static int parse_file(t_context *context, char *av)
     int fd;
 
     fd = 0;
-    if (context->hostnames != NULL) 
+    if (context->hostnames != NULL)
     {
         fprintf(stderr, "Multiple --ip or --file arguments provided. Only one is allowed.\n");
         return -1;
@@ -259,12 +262,12 @@ static int parse_thread_count(t_context *context, char *av)
 
     thread_count = ft_atoi(av);
 
-    if (thread_count <= 0 || thread_count > 250) 
+    if (thread_count <= 0 || thread_count > 250)
     {
         fprintf(stderr, "Invalid speedup number. speed must be between 1 and 250.\n");
         return -1;
     }
-    
+
     context->thread_count = thread_count;
     return 0;
 }
@@ -273,7 +276,7 @@ static int parse_scan_type(t_context *context, char *av)
 {
 
     // Initially set all scans to false (assuming 0 is false)
-    for (int i = 0; i < SCAN_COUNT; ++i) 
+    for (int i = 0; i < SCAN_COUNT; ++i)
         context->scan_types[i] = NULL;
 
     char **scan_types = NULL;
@@ -294,17 +297,17 @@ static int parse_scan_type(t_context *context, char *av)
 
     for (int i = 0; scan_types[i] != NULL; i++)
     {
-        if (ft_strncmp(scan_types[i], "SYN", 3) == 0) 
+        if (ft_strncmp(scan_types[i], "SYN", 3) == 0)
             context->scan_types[SCAN_SYN] = "SYN";
-        else if (ft_strncmp(scan_types[i], "NULL", 4) == 0) 
+        else if (ft_strncmp(scan_types[i], "NULL", 4) == 0)
             context->scan_types[SCAN_NULL] = "NULL";
-        else if (ft_strncmp(scan_types[i], "FIN", 3) == 0) 
+        else if (ft_strncmp(scan_types[i], "FIN", 3) == 0)
             context->scan_types[SCAN_FIN] = "FIN";
-        else if (ft_strncmp(scan_types[i], "XMAS", 4) == 0) 
+        else if (ft_strncmp(scan_types[i], "XMAS", 4) == 0)
             context->scan_types[SCAN_XMAS] = "XMAS";
-        else if (ft_strncmp(scan_types[i], "ACK", 3) == 0) 
+        else if (ft_strncmp(scan_types[i], "ACK", 3) == 0)
             context->scan_types[SCAN_ACK] = "ACK";
-        else if (ft_strncmp(scan_types[i], "UDP", 3) == 0) 
+        else if (ft_strncmp(scan_types[i], "UDP", 3) == 0)
             context->scan_types[SCAN_UDP] = "UDP";
         else
         {
@@ -324,7 +327,7 @@ static int parse_ip(t_context *context, char *av)
         In the case of the --ip option, since we accept only one argument, only one allocation is made.
     */
 
-    if (context->hostnames != NULL) 
+    if (context->hostnames != NULL)
     {
         fprintf(stderr, "Multiple --ip or --file arguments provided. Only one is allowed.\n");
         return -1;
@@ -437,9 +440,9 @@ static int check_arguments(t_context *context, int ac, char **av)
 
 int check_results(t_context *context)
 {
-    if (!context->ports)
+    if (context->port_count > 1024)
     {
-        fprintf(stderr, "No port to map were given.\n");
+        fprintf(stderr, "The number of port to scan cannot exceed 1024.\n");
         return -1;
     }
     else if (!context->hostnames)

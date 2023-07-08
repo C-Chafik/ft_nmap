@@ -2,6 +2,7 @@ SRCS =	./srcs/main.c \
 		./srcs/parsing.c \
 		./srcs/utils.c \
 		./srcs/memory.c \
+		./srcs/udp_tester.c \
 		./srcs/get_next_line/get_next_line.c \
 		./srcs/get_next_line/get_next_line_utils.c \
 		./srcs/tcp_tester.c \
