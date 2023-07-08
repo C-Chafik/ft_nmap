@@ -472,6 +472,6 @@ int init_parsing(t_context *context, int ac, char **av)
     if (check_arguments(context, ac, av) == -1)
         return -1;
     if (check_results(context) == -1)
-        return -10;
+        return -1;
     return 0;
 }
