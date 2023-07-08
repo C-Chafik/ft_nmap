@@ -53,15 +53,11 @@ int main(int ac, char **av)
     if (exit_code < 0)
     {
         free_context(&context);
-        printf("HRELLOc\n");
         return exit_code;
     }
 
-    printf("%d\n", exit_code);
-
     tcp_tester();
     // print_parsing_results(&context);
-    // udp_tester(&context);
 
     free_context(&context);
     return 0;
