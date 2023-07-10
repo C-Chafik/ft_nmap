@@ -11,7 +11,7 @@ t_tcp_vars init_tcp_packet(struct sockaddr_in *addr, char *addr_dest, int port_d
 	tcp_vars.iph = (struct iphdr *)tcp_vars.datagram;
 	tcp_vars.tcph = (struct tcphdr *)(tcp_vars.datagram + sizeof(struct ip));
 
-	printf("%s\n", inet_ntoa(((struct sockaddr_in*)addr)->sin_addr));
+	// printf("%s\n", inet_ntoa(((struct sockaddr_in*)addr)->sin_addr));
 
 	// ft_strlcpy(tcp_vars.source_ip, addr->sin_addr.s_addr, 11);
 	tcp_vars.sin.sin_family = AF_INET;

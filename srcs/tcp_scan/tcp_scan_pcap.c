@@ -59,8 +59,8 @@ struct sockaddr_in *setup_record(pcap_t **handle_pcap, pcap_if_t *devs)
 		if (tmp->flags != PCAP_IF_LOOPBACK)
 		{
 			for (struct pcap_addr *ad = tmp->addresses; ad; ad = ad->next){
-				printf("\t%s | ", inet_ntoa(((struct sockaddr_in*)ad->addr)->sin_addr));
-				printf(" family: %s\n", ((struct sockaddr_in*)ad->addr)->sin_family == AF_INET ? "AF_INET":"NOPE");
+				// printf("\t%s | ", inet_ntoa(((struct sockaddr_in*)ad->addr)->sin_addr));
+				// printf(" family: %s\n", ((struct sockaddr_in*)ad->addr)->sin_family == AF_INET ? "AF_INET":"NOPE");
 				if (((struct sockaddr_in*)ad->addr)->sin_family == AF_INET){
 					name = tmp->name;
 					addr = ((struct sockaddr_in*)ad->addr);
