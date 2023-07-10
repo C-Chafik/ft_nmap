@@ -28,7 +28,7 @@ unsigned short csum(unsigned short *ptr, int nbytes)
 	return (answer);
 }
 
-void init_ip_header(struct iphdr **iph, char *datagram, char *source_ip, in_addr_t s_addr)
+void init_ip_header(struct iphdr **iph, char *datagram, in_addr_t s_addr)
 {
 	(*iph)->ihl = 5;
 	(*iph)->version = 4;
@@ -39,16 +39,12 @@ void init_ip_header(struct iphdr **iph, char *datagram, char *source_ip, in_addr
 	(*iph)->ttl = 255;
 	(*iph)->protocol = IPPROTO_TCP;
 	(*iph)->check = 0;
-	(void)source_ip;
-	// (*iph)->saddr = inet_addr(source_ip);
 	(*iph)->daddr = s_addr;
 	(*iph)->check = csum((unsigned short *)datagram, (*iph)->tot_len);
 }
 
-void init_tcp_header(struct tcphdr **tcph, int port_src, int port_dest, u_char flags)
+void init_tcp_header(struct tcphdr **tcph, int port_dest, u_char flags)
 {
-	(void)port_src;
-	// (*tcph)->source = htons(port_src);
 	(*tcph)->dest = htons(port_dest);
 	(*tcph)->seq = 0;
 	(*tcph)->ack_seq = 0;

@@ -19,18 +19,18 @@ short check_tcp_port_state(const u_char *tcp_header, u_char flags)
 	return FILTERED;
 }
 
-void tcp_test_port(pcap_t **handle_pcap, int port)
+void tcp_test_port(pcap_t **handle_pcap, struct sockaddr_in *addr, int port)
 {
 	u_char user[BUFSIZ];
 	user[0] = N_SYN; //*SEND FLAG
-	((unsigned*)user)[4] = port;//! make dst port dynamic 
+	((unsigned*)user)[4] = port;
 
 	/*
 		TODO | remove ip src et port src
 		TODO | make port dynamic
 		TODO | make ip dynamic (find which interface use by default)
 	*/ 
-	t_tcp_vars tcp_vars = init_tcp_packet("172.17.0.2", 6675, "172.17.0.3", port, user[0]);
+	t_tcp_vars tcp_vars = init_tcp_packet(addr, "172.17.0.3", port, user[0]);//! change addr_dest to dynamic
 	send_tcp_packet(tcp_vars);
 
 	int rtn = pcap_dispatch(*handle_pcap, 65535, pcap_handler_fn, user) ;

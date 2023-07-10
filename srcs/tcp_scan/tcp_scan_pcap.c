@@ -2,7 +2,6 @@
 #include "../includes/includes.h"
 #include "../includes/define.h"
 
-
 void pcap_handler_fn(u_char *user, const struct pcap_pkthdr *header, const u_char *packet)
 {
 	(void)user;
@@ -34,17 +33,16 @@ void pcap_handler_fn(u_char *user, const struct pcap_pkthdr *header, const u_cha
 
 	// debug_print_tcp_header(tcp_header, tcp_header_length);
 	debug_print_tcp_flags(tcp_header, tcp_header_length, packet);
-	if (htons(*(unsigned *)(packet + 34)) != ((unsigned*)user)[4])
+	if (htons(*(unsigned *)(packet + 34)) != ((unsigned *)user)[4])
 		return;
 	user[1] = check_tcp_port_state(tcp_header, user[0]);
 
-	return; 
+	return;
 }
 
-void setup_record(pcap_t **handle_pcap)
+struct sockaddr_in *setup_record(pcap_t **handle_pcap, pcap_if_t *devs)
 {
 	char errbuf[PCAP_ERRBUF_SIZE] = {0};
-	pcap_if_t *devs = NULL;
 
 	if (pcap_findalldevs(&devs, errbuf) == PCAP_ERROR)
 	{
@@ -53,20 +51,33 @@ void setup_record(pcap_t **handle_pcap)
 	}
 
 	char *name = NULL;
+	struct sockaddr_in *addr = NULL;
+	bool stop = false;
 
-	for (pcap_if_t *tmp = devs; tmp != NULL; tmp = tmp->next){
-		if (tmp->flags != PCAP_IF_LOOPBACK){
-			name = tmp->name;
-			break;
+	for (pcap_if_t *tmp = devs; tmp != NULL && !stop; tmp = tmp->next)
+	{
+		if (tmp->flags != PCAP_IF_LOOPBACK)
+		{
+			for (struct pcap_addr *ad = tmp->addresses; ad; ad = ad->next){
+				printf("\t%s | ", inet_ntoa(((struct sockaddr_in*)ad->addr)->sin_addr));
+				printf(" family: %s\n", ((struct sockaddr_in*)ad->addr)->sin_family == AF_INET ? "AF_INET":"NOPE");
+				if (((struct sockaddr_in*)ad->addr)->sin_family == AF_INET){
+					name = tmp->name;
+					addr = ((struct sockaddr_in*)ad->addr);
+					stop = true;
+					break;
+				}
+			}
 		}
 	}
 
-	if (!name){
+	if (!name || !addr)
+	{
 		fprintf(stderr, "No (none loopback) interfaces\n");
 		exit(1);
 	}
 
-	*handle_pcap = pcap_open_live(name, BUFSIZ, 0, 1500, errbuf);//! choose interface
+	*handle_pcap = pcap_open_live(name, BUFSIZ, 0, 1500, errbuf); 
 	if (!*handle_pcap)
 	{
 		fprintf(stderr, "%s\n", errbuf);
@@ -74,7 +85,7 @@ void setup_record(pcap_t **handle_pcap)
 		exit(1);
 	}
 
-	pcap_freealldevs(devs);
+	return addr;
 }
 
 void setup_record_filter(pcap_t **handle_pcap, char *port)

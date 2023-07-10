@@ -2,7 +2,7 @@
 #include "../includes/includes.h"
 #include "../includes/define.h"
 
-t_tcp_vars init_tcp_packet(char *addr_src, int port_src, char *addr_dest, int port_dest, u_char flags)
+t_tcp_vars init_tcp_packet(struct sockaddr_in *addr, char *addr_dest, int port_dest, u_char flags)//! change addr_dest to dynamic
 {
 	t_tcp_vars tcp_vars = {0};
 	ft_bzero(tcp_vars.datagram, 4096);
@@ -11,15 +11,17 @@ t_tcp_vars init_tcp_packet(char *addr_src, int port_src, char *addr_dest, int po
 	tcp_vars.iph = (struct iphdr *)tcp_vars.datagram;
 	tcp_vars.tcph = (struct tcphdr *)(tcp_vars.datagram + sizeof(struct ip));
 
-	ft_strlcpy(tcp_vars.source_ip, addr_src, 11);
+	printf("%s\n", inet_ntoa(((struct sockaddr_in*)addr)->sin_addr));
+
+	// ft_strlcpy(tcp_vars.source_ip, addr->sin_addr.s_addr, 11);
 	tcp_vars.sin.sin_family = AF_INET;
 	tcp_vars.sin.sin_port = htons(port_dest);
 	tcp_vars.sin.sin_addr.s_addr = inet_addr(addr_dest);
 
-	init_ip_header(&tcp_vars.iph, tcp_vars.datagram, tcp_vars.source_ip, tcp_vars.sin.sin_addr.s_addr);
-	init_tcp_header(&tcp_vars.tcph, port_src, port_dest, flags);
+	init_ip_header(&tcp_vars.iph, tcp_vars.datagram, tcp_vars.sin.sin_addr.s_addr);
+	init_tcp_header(&tcp_vars.tcph, port_dest, flags);
 
-	tcp_vars.psh.source_address = inet_addr(tcp_vars.source_ip);
+	tcp_vars.psh.source_address = addr->sin_addr.s_addr;
 	tcp_vars.psh.dest_address = tcp_vars.sin.sin_addr.s_addr;
 	tcp_vars.psh.placeholder = 0;
 	tcp_vars.psh.protocol = IPPROTO_TCP;
