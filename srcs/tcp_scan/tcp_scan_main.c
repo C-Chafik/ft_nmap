@@ -22,11 +22,3 @@ void tcp_tester(t_context *context)
 	pcap_freealldevs(devs);
 }
 
-/*
-	Pour filter et unfilter les ports d'un container:
-	- run le container en briged avec:
-		`--cap-add=NET_ADMIN`
-	- utiliser les commandes suivantes dans le container:
-		`iptables -P INPUT DROP`
-		`iptables -P INPUT ALLOW`
-*/
