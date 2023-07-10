@@ -56,7 +56,7 @@ int main(int ac, char **av)
         return exit_code;
     }
 
-    tcp_tester();
+    tcp_tester(&context);
     // print_parsing_results(&context);
 
     free_context(&context);
