@@ -33,7 +33,7 @@ all: $(NAME)
 
 $(NAME): $(OBJS)
 	make -C ./srcs/libft
-	$(CC) $(CFLAGS) $(PTHREADFLAG) $(PCAPFLAG) -g3 $(OBJS) ./srcs/libft/libft.a -o $(NAME)
+	$(CC) $(CFLAGS) $(PTHREADFLAG) -g3 $(OBJS) ./srcs/libft/libft.a -o $(NAME) $(PCAPFLAG)
 
 clean:
 	$(RM) $(OBJS)
