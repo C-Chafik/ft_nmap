@@ -81,7 +81,6 @@ struct sockaddr_in *setup_record(pcap_t **handle_pcap, pcap_if_t *devs)
 	if (!*handle_pcap)
 	{
 		fprintf(stderr, "%s\n", errbuf);
-		pcap_close(*handle_pcap);
 		exit(1);
 	}
 
