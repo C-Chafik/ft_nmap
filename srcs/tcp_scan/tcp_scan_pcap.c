@@ -24,7 +24,8 @@ void pcap_handler_fn(u_char *user, const struct pcap_pkthdr *header, const u_cha
 	if (protocol != IPPROTO_TCP)
 	{
 		printf(ANSI_COLOR_RED "Not a TCP packet. Skipping...\n" ANSI_COLOR_RESET);
-		exit(1);
+		user[10] = 0;
+		return;
 	}
 
 	tcp_header = packet + ethernet_header_length + ip_header_length;
@@ -37,6 +38,7 @@ void pcap_handler_fn(u_char *user, const struct pcap_pkthdr *header, const u_cha
 		return;
 	user[1] = check_tcp_port_state(tcp_header, user[0]);
 
+	user[10] = 1;
 	return;
 }
 

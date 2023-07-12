@@ -30,7 +30,7 @@ void tcp_test_port(pcap_t **handle_pcap, struct sockaddr_in *addr, char *ip_dest
 
 	int rtn = pcap_dispatch(*handle_pcap, 65535, pcap_handler_fn, user) ;
 
-	if (rtn == PCAP_ERROR)
+	if (rtn == PCAP_ERROR || !user[10])
 	{
 		pcap_geterr(*handle_pcap);
 		pcap_breakloop(*handle_pcap);
