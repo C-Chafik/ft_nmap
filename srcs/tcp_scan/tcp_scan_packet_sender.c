@@ -6,7 +6,7 @@ t_tcp_vars init_tcp_packet(struct sockaddr_in *addr, char *addr_dest, int port_d
 {
 	t_tcp_vars tcp_vars = {0};
 	ft_bzero(tcp_vars.datagram, 4096);
-	ft_bzero(tcp_vars.iph, sizeof(struct iphdr));
+	// ft_bzero(tcp_vars.iph, sizeof(struct iphdr));
 
 	tcp_vars.sock = socket(AF_INET, SOCK_RAW, IPPROTO_TCP);
 	tcp_vars.iph = (struct iphdr *)tcp_vars.datagram;
