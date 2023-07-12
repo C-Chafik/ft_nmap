@@ -40,9 +40,17 @@ void pcap_handler_fn(u_char *user, const struct pcap_pkthdr *header, const u_cha
 	return;
 }
 
-struct sockaddr_in *setup_record(pcap_t **handle_pcap, pcap_if_t *devs)
+struct sockaddr_in *setup_record(pcap_t **handle_pcap)
 {
 	char errbuf[PCAP_ERRBUF_SIZE] = {0};
+	pcap_if_t *devs = NULL;
+	struct sockaddr_in *rtn = NULL;
+	rtn = malloc(sizeof(struct sockaddr_in));
+
+	if (!rtn){
+		perror("malloc alloc failed");
+		exit(1);
+	}
 
 	if (pcap_findalldevs(&devs, errbuf) == PCAP_ERROR)
 	{
@@ -51,7 +59,6 @@ struct sockaddr_in *setup_record(pcap_t **handle_pcap, pcap_if_t *devs)
 	}
 
 	char *name = NULL;
-	struct sockaddr_in *addr = NULL;
 	bool stop = false;
 
 	for (pcap_if_t *tmp = devs; tmp != NULL && !stop; tmp = tmp->next)
@@ -59,11 +66,11 @@ struct sockaddr_in *setup_record(pcap_t **handle_pcap, pcap_if_t *devs)
 		if (tmp->flags != PCAP_IF_LOOPBACK)
 		{
 			for (struct pcap_addr *ad = tmp->addresses; ad; ad = ad->next){
-				// printf("\t%s | ", inet_ntoa(((struct sockaddr_in*)ad->addr)->sin_addr));
-				// printf(" family: %s\n", ((struct sockaddr_in*)ad->addr)->sin_family == AF_INET ? "AF_INET":"NOPE");
+				// printf("\t%s | ", inet_ntoa(((struct sockaddr_in*)ad->rtn)->sin_addr));
+				// printf(" family: %s\n", ((struct sockaddr_in*)ad->rtn)->sin_family == AF_INET ? "AF_INET":"NOPE");
 				if (((struct sockaddr_in*)ad->addr)->sin_family == AF_INET){
 					name = tmp->name;
-					addr = ((struct sockaddr_in*)ad->addr);
+					ft_memcpy(rtn, (struct sockaddr_in*)ad->addr, sizeof(struct sockaddr_in));
 					stop = true;
 					break;
 				}
@@ -71,26 +78,30 @@ struct sockaddr_in *setup_record(pcap_t **handle_pcap, pcap_if_t *devs)
 		}
 	}
 
-	if (!name || !addr)
+	if (!name || !rtn)
 	{
 		fprintf(stderr, "No (none loopback) interfaces\n");
+		pcap_freealldevs(devs);
 		exit(1);
 	}
 
 	*handle_pcap = pcap_open_live(name, BUFSIZ, 0, 1500, errbuf); 
 	if (!*handle_pcap)
 	{
+		pcap_freealldevs(devs);
 		fprintf(stderr, "%s\n", errbuf);
 		exit(1);
 	}
 
-	return addr;
+	pcap_freealldevs(devs);
+	return rtn;
 }
 
 void setup_record_filter(pcap_t **handle_pcap, char *port)
 {
 	struct bpf_program filter = {0};
-	char *filter_exp = ft_strjoin("tcp port ", port);
+	char *filter_exp =NULL;
+	filter_exp = ft_strjoin("tcp port ", port);
 
 	if (pcap_compile(*handle_pcap, &filter, filter_exp, 0, 0) == PCAP_ERROR || pcap_setfilter(*handle_pcap, &filter) == PCAP_ERROR)
 	{
@@ -98,5 +109,6 @@ void setup_record_filter(pcap_t **handle_pcap, char *port)
 		exit(1);
 	}
 
+	free(port);
 	free(filter_exp);
 }

@@ -31,7 +31,7 @@ t_tcp_vars init_tcp_packet(struct sockaddr_in *addr, char *addr_dest, int port_d
 void send_tcp_packet(t_tcp_vars tcp_vars);
 
 void pcap_handler_fn(u_char *user, const struct pcap_pkthdr *header, const u_char *packet);
-struct sockaddr_in *setup_record(pcap_t **handle_pcap, pcap_if_t *devs);
+struct sockaddr_in *setup_record(pcap_t **handle_pcap);
 void setup_record_filter(pcap_t **handle_pcap, char *port);
 
 short check_tcp_port_state(const u_char *tcp_header, u_char flags);
