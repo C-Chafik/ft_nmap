@@ -22,13 +22,14 @@ void tcp_tester(t_context *context)
 	{
 		for (int j = 0; j < context->port_count; j++)
 		{
-			if (!setup_record_filter(handle_pcap, ft_itoa(context->ports[j])))
+			if (
+				!setup_record_filter(handle_pcap, ft_itoa(context->ports[j])) ||
+				!tcp_test_port(handle_pcap, addr, context->hostnames[i], context->ports[j]))
 			{
 				free(handle_pcap);
 				free(addr);
 				return;
 			}
-			tcp_test_port(handle_pcap, addr, context->hostnames[i], context->ports[j]);
 		}
 	}
 

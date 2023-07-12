@@ -19,7 +19,7 @@ short check_tcp_port_state(const u_char *tcp_header, u_char flags)
 	return FILTERED;
 }
 
-void tcp_test_port(pcap_t **handle_pcap, struct sockaddr_in *addr, char *ip_dest, int port)
+bool tcp_test_port(pcap_t **handle_pcap, struct sockaddr_in *addr, char *ip_dest, int port)
 {
 	u_char user[BUFSIZ];
 	user[0] = N_SYN; //*SEND FLAG
@@ -35,7 +35,7 @@ void tcp_test_port(pcap_t **handle_pcap, struct sockaddr_in *addr, char *ip_dest
 		pcap_geterr(*handle_pcap);
 		pcap_breakloop(*handle_pcap);
 		pcap_close(*handle_pcap);
-		exit(1);
+		return false;
 	}
 	else if (rtn == 1){//* TIMEOUT
 		if (user[0] == N_XMAS || user[0] == N_FIN || user[0] == N_NULL)
@@ -57,4 +57,5 @@ void tcp_test_port(pcap_t **handle_pcap, struct sockaddr_in *addr, char *ip_dest
 
 	pcap_breakloop(*handle_pcap);
 	pcap_close(*handle_pcap);
+	return false;
 }
