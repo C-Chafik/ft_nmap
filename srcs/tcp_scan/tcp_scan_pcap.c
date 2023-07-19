@@ -105,7 +105,7 @@ struct sockaddr_in *setup_record(pcap_t **handle_pcap)
 bool setup_record_filter(pcap_t **handle_pcap, char *port)
 {
 	struct bpf_program filter = {0};
-	char *filter_exp =NULL;
+	char *filter_exp = NULL;
 	filter_exp = ft_strjoin("tcp port ", port);
 
 	if (pcap_compile(*handle_pcap, &filter, filter_exp, 0, 0) == PCAP_ERROR || pcap_setfilter(*handle_pcap, &filter) == PCAP_ERROR)
@@ -119,5 +119,6 @@ bool setup_record_filter(pcap_t **handle_pcap, char *port)
 
 	free(port);
 	free(filter_exp);
+	pcap_freecode(&filter);
 	return true;
 }
