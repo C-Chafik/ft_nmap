@@ -54,6 +54,14 @@ struct sockaddr_in *setup_record(pcap_t **handle_pcap)
 		return NULL;
 	}
 
+	/*
+		Si valgrind affiche des uninitialised bytes ici,
+		c'est que valgrind n'arrive pas a suivre la memoire qui est utilis car elle passe par le kernel
+		pour regler le probleme il faudrait wrapper le call de la fonction avec des macro valgrind qui sont out of scope
+		=========
+		https://cs.swan.ac.uk/~csoliver/ok-sat-library/internet_html/doc/doc/Valgrind/3.8.1/html/dist.readme-missing.html
+		https://chromium.googlesource.com/chromiumos/third_party/gcc/+/refs/heads/factory-ryu-6486.B/libsanitizer/sanitizer_common/sanitizer_common_syscalls.inc
+	*/
 	if (pcap_findalldevs(&devs, errbuf) == PCAP_ERROR)
 	{
 		fprintf(stderr, "%s\n", errbuf);

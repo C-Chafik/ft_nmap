@@ -14,7 +14,6 @@ void tcp_tester(t_context *context)
 	if (!addr)
 	{
 		free(handle_pcap);
-		free(addr);
 		return;
 	}
 

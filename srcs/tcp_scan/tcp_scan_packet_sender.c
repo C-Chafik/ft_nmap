@@ -12,8 +12,6 @@ t_tcp_vars init_tcp_packet(struct sockaddr_in *addr, char *addr_dest, int port_d
 	tcp_vars.iph = (struct iphdr *)tcp_vars.datagram;
 	tcp_vars.tcph = (struct tcphdr *)(tcp_vars.datagram + sizeof(struct ip));
 
-	// printf("%s\n", inet_ntoa(((struct sockaddr_in*)addr)->sin_addr));
-
 	// ft_strlcpy(tcp_vars.source_ip, addr->sin_addr.s_addr, 11);
 	tcp_vars.sin.sin_family = AF_INET;
 	tcp_vars.sin.sin_port = htons(port_dest);
@@ -52,7 +50,7 @@ t_tcp_vars init_tcp_packet(struct sockaddr_in *addr, char *addr_dest, int port_d
 
 void send_tcp_packet(t_tcp_vars tcp_vars)
 {
-	struct timeval timeout = {0, 15000};
+	struct timeval timeout = {0, 1500};
 	if (setsockopt(tcp_vars.sock, SOL_SOCKET, SO_SNDTIMEO, &timeout, sizeof(timeout)) < 0)
 	{
 		perror("setsockopt");
