@@ -52,7 +52,7 @@ t_tcp_vars *init_tcp_packet(struct sockaddr_in *addr, char *addr_dest, int port_
 	return tcp_vars;
 }
 
-void send_tcp_packet(t_tcp_vars *tcp_vars)
+bool send_tcp_packet(t_tcp_vars *tcp_vars)
 {
 	struct timeval timeout = {0, 1500};
 	if (setsockopt(tcp_vars->sock, SOL_SOCKET, SO_SNDTIMEO, &timeout, sizeof(timeout)) < 0)
@@ -60,7 +60,7 @@ void send_tcp_packet(t_tcp_vars *tcp_vars)
 		perror("setsockopt");
 		free(tcp_vars->pseudogram);
 		close(tcp_vars->sock);
-		exit(0);
+		return false;
 	}
 
 	if (sendto(tcp_vars->sock, tcp_vars->datagram, tcp_vars->iph->tot_len, 0, (struct sockaddr *)&tcp_vars->sin, sizeof(tcp_vars->sin)) < 0)
@@ -68,8 +68,10 @@ void send_tcp_packet(t_tcp_vars *tcp_vars)
 		free(tcp_vars->pseudogram);
 		close(tcp_vars->sock);
 		perror("sendto failed");
+		return false;
 	}
 
 	free(tcp_vars->pseudogram);
 	close(tcp_vars->sock);
+	return true;
 }

@@ -58,11 +58,10 @@ bool tcp_test_port(pcap_t **handle_pcap, struct sockaddr_in *addr, char *ip_dest
 	((unsigned*)user)[4] = port;
 
 	t_tcp_vars *tcp_vars = init_tcp_packet(addr, ip_dest, port, user[0]);
-	if (!tcp_vars){
+	if (!tcp_vars || !send_tcp_packet(tcp_vars)){
 		pcap_close(*handle_pcap);
 		return false;
 	}
-	send_tcp_packet(tcp_vars);
 
 	int rtn = pcap_dispatch(*handle_pcap, 65535, pcap_handler_fn, user);
 	if (rtn == PCAP_ERROR)

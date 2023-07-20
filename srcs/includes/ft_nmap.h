@@ -28,7 +28,7 @@ void init_ip_header(struct iphdr **iph, char *datagram, in_addr_t s_addr);
 unsigned short csum(unsigned short *ptr, int nbytes);
 
 t_tcp_vars *init_tcp_packet(struct sockaddr_in *addr, char *addr_dest, int port_dest, u_char flags);
-void send_tcp_packet(t_tcp_vars *tcp_vars);
+bool send_tcp_packet(t_tcp_vars *tcp_vars);
 
 void pcap_handler_fn(u_char *user, const struct pcap_pkthdr *header, const u_char *packet);
 struct sockaddr_in *setup_record(pcap_t **handle_pcap);
