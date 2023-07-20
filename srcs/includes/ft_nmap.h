@@ -35,7 +35,7 @@ struct sockaddr_in *setup_record(pcap_t **handle_pcap);
 bool setup_record_filter(pcap_t **handle_pcap, char *port);
 
 short check_tcp_port_state(const u_char *tcp_header, u_char flags);
-bool tcp_test_port(pcap_t **handle_pcap, struct sockaddr_in *addr, char *ip_dest, int port);
+bool tcp_test_port(pcap_t **handle_pcap, struct sockaddr_in *addr, char *ip_dest, int port, char *scan_type);
 
 
 
