@@ -14,7 +14,7 @@ void pcap_handler_fn(u_char *user, const struct pcap_pkthdr *header, const u_cha
 	int ip_header_length = 0;
 	int tcp_header_length = 0;
 
-	debug_print_full_packet(header, packet);
+	// debug_print_full_packet(header, packet);
 
 	ip_header = packet + ethernet_header_length;
 	ip_header_length = ((*ip_header) & 0x0F);
@@ -33,7 +33,7 @@ void pcap_handler_fn(u_char *user, const struct pcap_pkthdr *header, const u_cha
 	tcp_header_length = tcp_header_length * 4;
 
 	// debug_print_tcp_header(tcp_header, tcp_header_length);
-	debug_print_tcp_flags(tcp_header, tcp_header_length, packet);
+	// debug_print_tcp_flags(tcp_header, tcp_header_length, packet);
 	if (htons(*(unsigned *)(packet + 34)) != ((unsigned *)user)[4])
 		return;
 	user[1] = check_tcp_port_state(tcp_header, user[0]);

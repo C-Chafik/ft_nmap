@@ -56,9 +56,9 @@ int main(int ac, char **av)
         return exit_code;
     }
 
-    tcp_tester(&context);
+    int rtn = tcp_tester(&context);
     // print_parsing_results(&context);
 
     free_context(&context);
-    return 0;
+    return rtn;
 }

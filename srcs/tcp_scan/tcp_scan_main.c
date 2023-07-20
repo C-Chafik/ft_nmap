@@ -2,19 +2,19 @@
 #include "../includes/includes.h"
 #include "../includes/define.h"
 
-void tcp_tester(t_context *context)
+int tcp_tester(t_context *context)
 {
 	pcap_t **handle_pcap = NULL;
 	struct sockaddr_in *addr = NULL;
 	handle_pcap = malloc(sizeof(pcap_t *));
 	if (!handle_pcap)
-		return;
+		return 1;
 
 	addr = setup_record(handle_pcap);
 	if (!addr)
 	{
 		free(handle_pcap);
-		return;
+		return 2;
 	}
 
 	for (int i = 0; context->hostnames[i]; i++)
@@ -27,11 +27,12 @@ void tcp_tester(t_context *context)
 			{
 				free(handle_pcap);
 				free(addr);
-				return;
+				return 3;
 			}
 		}
 	}
 
 	free(handle_pcap);
 	free(addr);
+	return 0;
 }
