@@ -59,24 +59,20 @@ bool tcp_test_port(pcap_t **handle_pcap, struct sockaddr_in *addr, char *ip_dest
 	((unsigned*)user)[U_SCANNED_PORT] = port;
 
 	t_tcp_vars *tcp_vars = init_tcp_packet(addr, ip_dest, port, user[U_SCAN_TYPE]);
-	if (!tcp_vars || !send_tcp_packet(tcp_vars)){
-		pcap_close(*handle_pcap);
+	if (!tcp_vars || !send_tcp_packet(tcp_vars))
 		return false;
-	}
 
 	int rtn = pcap_dispatch(*handle_pcap, 65535, pcap_handler_fn, user);
 	if (rtn == PCAP_ERROR)
 	{
 		pcap_geterr(*handle_pcap);
 		pcap_breakloop(*handle_pcap);
-		pcap_close(*handle_pcap);
 		return false;
 	}
 
 	print_result(rtn, user);
 
 	pcap_breakloop(*handle_pcap);
-	pcap_close(*handle_pcap);
 	free(tcp_vars);
 	return true;
 }
