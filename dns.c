@@ -6,48 +6,46 @@
 #include <string.h>
 #include <stdlib.h>
 
-void resolve_host(const char *hostname)
-{
-    struct addrinfo hints, *res;
-    int errcode;
-    char addrstr[100];
-    void *ptr;
+char *resolve_host(const char *hostname) {
+    struct  addrinfo hints, *res;
+    int     status;
+    char    *ipstr;
 
-    memset(&hints, 0, sizeof(hints));
-    hints.ai_family = PF_UNSPEC;
-    hints.ai_socktype = SOCK_STREAM;
+    memset(&hints, 0, sizeof hints);
+    hints.ai_family = AF_INET; // On s'intéresse uniquement à l'IPv4 pour le moment
 
-    errcode = getaddrinfo(hostname, NULL, &hints, &res);
-    if (errcode != 0)
+    if ((status = getaddrinfo(hostname, NULL, &hints, &res)) != 0) 
     {
-        perror("getaddrinfo");
-        return;
+        fprintf(stderr, "getaddrinfo: %s\n", gai_strerror(status));
+        return NULL;
     }
 
-    printf("Host: %s\n", hostname);
-    while (res)
+    struct sockaddr_in *ipv4 = (struct sockaddr_in *)res->ai_addr;
+    ipstr = malloc(NI_MAXHOST);
+    if (!ipstr)
     {
-        inet_ntop(res->ai_family, res->ai_addr->sa_data, addrstr, 100);
-
-        switch (res->ai_family)
-        {
-        case AF_INET:
-            ptr = &((struct sockaddr_in *) res->ai_addr)->sin_addr;
-            break;
-        case AF_INET6:
-            ptr = &((struct sockaddr_in6 *) res->ai_addr)->sin6_addr;
-            break;
-        }
-        inet_ntop(res->ai_family, ptr, addrstr, 100);
-        printf("IPv%d address: %s\n", res->ai_family == PF_INET6 ? 6 : 4, addrstr);
-
-        res = res->ai_next;
+        fprintf(stderr, "Could not allocate ipstr, FATAL ERROR\n");
+        return NULL;
     }
+    if (!inet_ntop(res->ai_family, &(ipv4->sin_addr), ipstr, NI_MAXHOST)) 
+    {
+        perror("inet_ntop");
+        free(ipstr);
+        freeaddrinfo(res);
+        return NULL;
+    }
+
+    freeaddrinfo(res);
+    return ipstr;
 }
+
 
 int main()
 {
-    resolve_host("localhost");
-    resolve_host("google.om");
+    char *res;
+    
+    res = resolve_host("127.0.0.1");
+    if (res)
+        printf("%s\n", res);
     return 0;
 }
