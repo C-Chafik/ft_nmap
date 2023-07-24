@@ -3,16 +3,16 @@
 #include "../includes/define.h"
 
 
-short check_tcp_port_state(const u_char *tcp_header, u_char flags)
+short check_tcp_port_state(const u_char tcp_header, u_char flags)
 {
 	if (flags == N_XMAS || flags == N_NULL || flags == N_FIN){
-		if (*(tcp_header + 13) & RST)
+		if (tcp_header & RST)
 			return CLOSE;
 	}
 	else if (flags == N_SYN){
-		if (*(tcp_header + 13) == (SYN | ACK))
+		if (tcp_header == (SYN | ACK))
 			return OPEN;
-		else if (*(tcp_header + 13))
+		else if (tcp_header)
 			return CLOSE;
 	}
 
@@ -27,19 +27,20 @@ void print_result(int rtn, u_char *user){
 	char *state = NULL;
 	
 	if (rtn == 1){//* TIMEOUT
-		if (user[0] == N_XMAS || user[0] == N_FIN || user[0] == N_NULL)
+		if (user[U_SCAN_TYPE] == N_XMAS || user[U_SCAN_TYPE] == N_FIN || user[U_SCAN_TYPE] == N_NULL)
 			state = ft_strdup("open | filtered");
-		if (user[0] == N_SYN || user[0] == N_ACK)
+		if (user[U_SCAN_TYPE] == N_SYN || user[U_SCAN_TYPE] == N_ACK)
 			state = ft_strdup("filtered");
 	}
 	else {
-		if (user[0]  == N_ACK){
+		short rtn_state = check_tcp_port_state(user[U_TCP_RTN], user[U_SCAN_TYPE]);
+		if (user[U_SCAN_TYPE]  == N_ACK){
 			state = ft_strdup("unfiltered");
 		}
 		else{
-			if (user[1] == CLOSE)
+			if (rtn_state == CLOSE)
 				state = ft_strdup("close");
-			else if (user[1] == OPEN)
+			else if (rtn_state == OPEN)
 				state = ft_strdup("open");
 		}
 	}
@@ -47,17 +48,17 @@ void print_result(int rtn, u_char *user){
 		fprintf(stderr, "Fail to malloc the string for the state");
 		return;
 	}
-	printf("%-15s %-15s %-15s\n% 5d%-10s %-15s\tservice\n", s_port, s_state, s_service, ((unsigned *)user)[4], s_proto, state);
+	printf("%-15s %-15s %-15s\n% 5d%-10s %-15s\tservice\n", s_port, s_state, s_service, ((unsigned *)user)[U_SCANNED_PORT], s_proto, state);
 	free(state);
 }
 
 bool tcp_test_port(pcap_t **handle_pcap, struct sockaddr_in *addr, char *ip_dest, int port)
 {
 	u_char user[BUFSIZ];
-	user[0] = N_SYN; //*SEND FLAG
-	((unsigned*)user)[4] = port;
+	user[U_SCAN_TYPE] = N_SYN; //*SEND FLAG
+	((unsigned*)user)[U_SCANNED_PORT] = port;
 
-	t_tcp_vars *tcp_vars = init_tcp_packet(addr, ip_dest, port, user[0]);
+	t_tcp_vars *tcp_vars = init_tcp_packet(addr, ip_dest, port, user[U_SCAN_TYPE]);
 	if (!tcp_vars || !send_tcp_packet(tcp_vars)){
 		pcap_close(*handle_pcap);
 		return false;
