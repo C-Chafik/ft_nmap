@@ -38,22 +38,22 @@ void debug_print_tcp_flags(const u_char *tcp_header, int tcp_header_length, cons
 	if (tcp_header_length > 12)
 	{
 		printf(ANSI_COLOR_BLUE "TCP FLAG: ");
-		if (*(tcp_header + 13) & FIN)
+		if (*(tcp_header + TCP_RSP_FLAG_OFF) & FIN)
 			printf("FIN ");
-		if (*(tcp_header + 13) & SYN)
+		if (*(tcp_header + TCP_RSP_FLAG_OFF) & SYN)
 			printf("SYN ");
-		if (*(tcp_header + 13) & RST)
+		if (*(tcp_header + TCP_RSP_FLAG_OFF) & RST)
 			printf("RST ");
-		if (*(tcp_header + 13) & PSH)
+		if (*(tcp_header + TCP_RSP_FLAG_OFF) & PSH)
 			printf("PSH ");
-		if (*(tcp_header + 13) & ACK)
+		if (*(tcp_header + TCP_RSP_FLAG_OFF) & ACK)
 			printf("ACK ");
-		if (*(tcp_header + 13) & URG)
+		if (*(tcp_header + TCP_RSP_FLAG_OFF) & URG)
 			printf("URG ");
-		printf("( 0x%02x )\n" ANSI_COLOR_RESET, *(tcp_header + 13));
+		printf("( 0x%02x )\n" ANSI_COLOR_RESET, *(tcp_header + TCP_RSP_FLAG_OFF));
 
-		printf(ANSI_COLOR_BLUE "TCP SRC: %u\n" ANSI_COLOR_RESET, htons(*(unsigned *)(packet + 34)));
-		printf(ANSI_COLOR_BLUE "TCP DST: %u\n" ANSI_COLOR_RESET, htons(*(unsigned *)(packet + 36)));
+		printf(ANSI_COLOR_BLUE "TCP SRC: %u\n" ANSI_COLOR_RESET, htons(*(unsigned *)(packet + PORT_SRC_OFF)));
+		printf(ANSI_COLOR_BLUE "TCP DST: %u\n" ANSI_COLOR_RESET, htons(*(unsigned *)(packet + PORT_DST_OFF)));
 		printf(ANSI_COLOR_BLUE "==================\n" ANSI_COLOR_RESET);
 	}
 }

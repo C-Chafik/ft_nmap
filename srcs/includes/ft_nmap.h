@@ -17,7 +17,7 @@ void	free_context(t_context *context);
 
 void    udp_tester(t_context *context);
 
-int	tcp_tester();
+int	tcp_tester(t_context *context);
 
 void debug_print_full_packet(const struct pcap_pkthdr *header, const u_char *packet);
 void debug_print_tcp_header(const u_char *tcp_header, int tcp_header_length);
