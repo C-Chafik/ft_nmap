@@ -116,15 +116,7 @@ bool setup_record_filter(pcap_t **handle_pcap, char *port)
 	char *filter_exp = NULL;
 	filter_exp = ft_strjoin("tcp port ", port);
 
-	if (pcap_compile(*handle_pcap, &filter, filter_exp, 0, 0) == PCAP_ERROR)
-	{
-		pcap_geterr(*handle_pcap);
-		free(port);
-		free(filter_exp);
-		return false;
-	}
-
-	if (pcap_setfilter(*handle_pcap, &filter) == PCAP_ERROR)
+	if (pcap_compile(*handle_pcap, &filter, filter_exp, 0, 0) == PCAP_ERROR || pcap_setfilter(*handle_pcap, &filter) == PCAP_ERROR)
 	{
 		pcap_geterr(*handle_pcap);
 		free(port);
