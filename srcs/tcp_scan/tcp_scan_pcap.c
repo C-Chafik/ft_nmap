@@ -47,7 +47,7 @@ struct sockaddr_in *setup_record(pcap_t **handle_pcap)
 	char errbuf[PCAP_ERRBUF_SIZE] = {0};
 	pcap_if_t *devs = NULL;
 	struct sockaddr_in *rtn = NULL;
-	rtn = malloc(sizeof(struct sockaddr_in));
+	rtn = ft_calloc(1, sizeof(struct sockaddr_in));
 
 	if (!rtn){
 		perror("malloc alloc failed");
@@ -93,7 +93,8 @@ struct sockaddr_in *setup_record(pcap_t **handle_pcap)
 	{
 		fprintf(stderr, "No (none loopback) interfaces\n");
 		pcap_freealldevs(devs);
-		free(rtn);
+		if (rtn)
+			free(rtn);
 		return NULL;
 	}
 
