@@ -17,6 +17,15 @@ int tcp_tester(t_context *context)
 		}
 		for (int j = 0; context->hostnames[j]; j++)
 		{
+			char *final_hostname = NULL;
+
+			final_hostname = resolve_host(context->hostnames[j]);
+			if (!final_hostname)
+			{
+				printf("%s, Could not resolve hostname : %s\n", context->scan_types[i], context->hostnames[j]);
+				continue ;
+			}
+
 			for (int k = 0; k < context->port_count; k++)
 			{
 				addr = setup_record(handle_pcap);
@@ -27,7 +36,7 @@ int tcp_tester(t_context *context)
 				}
 				if (
 					!setup_record_filter(handle_pcap, ft_itoa(context->ports[k])) ||
-					!tcp_test_port(handle_pcap, addr, context->hostnames[j], context->ports[k], context->scan_types[i]))
+					!tcp_test_port(handle_pcap, addr, final_hostname, context->ports[k], context->scan_types[i]))
 				{
 					free(handle_pcap);
 					free(addr);
@@ -36,6 +45,9 @@ int tcp_tester(t_context *context)
 				free(addr);
 				pcap_close(*handle_pcap);
 			}
+
+			if (final_hostname)
+				free(final_hostname);
 		}
 	}
 

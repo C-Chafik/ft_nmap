@@ -23,8 +23,8 @@
 # include <netinet/ip.h>	
 # include <errno.h>
 # include <poll.h>
-#include <netdb.h>
-#include <sys/types.h>
-#include <ifaddrs.h>
+# include <netdb.h>
+# include <sys/types.h>
+# include <ifaddrs.h>
 
 #endif
