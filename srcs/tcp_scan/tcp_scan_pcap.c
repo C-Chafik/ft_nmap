@@ -4,6 +4,7 @@
 
 void pcap_handler_fn(u_char *user, const struct pcap_pkthdr *header, const u_char *packet)
 {
+	(void)user;
 	(void)header;
 
 	const u_char *ip_header = NULL;
@@ -13,7 +14,7 @@ void pcap_handler_fn(u_char *user, const struct pcap_pkthdr *header, const u_cha
 	int ip_header_length = 0;
 	int tcp_header_length = 0;
 
-	debug_print_full_packet(header, packet);
+	// debug_print_full_packet(header, packet);
 
 	ip_header = packet + ethernet_header_length;
 	ip_header_length = ((*ip_header) & 0x0F);
@@ -23,7 +24,7 @@ void pcap_handler_fn(u_char *user, const struct pcap_pkthdr *header, const u_cha
 	if (protocol != IPPROTO_TCP)
 	{
 		printf(ANSI_COLOR_RED "Not a TCP packet. Skipping...\n" ANSI_COLOR_RESET);
-		user[U_IS_TCP] = 0;
+		user[10] = 0;
 		return;
 	}
 
@@ -33,11 +34,11 @@ void pcap_handler_fn(u_char *user, const struct pcap_pkthdr *header, const u_cha
 
 	// debug_print_tcp_header(tcp_header, tcp_header_length);
 	// debug_print_tcp_flags(tcp_header, tcp_header_length, packet);
-	// if (htons(*(unsigned *)(packet + PORT_SRC_OFF)) != ((unsigned *)user)[U_SCANNED_PORT])
-	// 	return;
-	user[U_PORT_STATE] = check_tcp_port_state(tcp_header, user[U_SCAN_TYPE]);
+	if (htons(*(unsigned *)(packet + 34)) != ((unsigned *)user)[4])
+		return;
+	user[1] = check_tcp_port_state(tcp_header, user[0]);
 
-	user[U_IS_TCP] = 1;
+	user[10] = 1;
 	return;
 }
 
@@ -96,7 +97,7 @@ struct sockaddr_in *setup_record(pcap_t **handle_pcap)
 		return NULL;
 	}
 
-	*handle_pcap = pcap_open_live(name, BUFSIZ, 0, 0, errbuf); 
+	*handle_pcap = pcap_open_live(name, BUFSIZ, 0, 1500, errbuf); 
 	if (!*handle_pcap)
 	{
 		pcap_freealldevs(devs);
@@ -113,8 +114,7 @@ bool setup_record_filter(pcap_t **handle_pcap, char *port)
 {
 	struct bpf_program filter = {0};
 	char *filter_exp = NULL;
-	filter_exp = ft_strjoin("tcp src port ", port);
-	printf("%s\n", filter_exp);
+	filter_exp = ft_strjoin("tcp port ", port);
 
 	if (pcap_compile(*handle_pcap, &filter, filter_exp, 0, 0) == PCAP_ERROR)
 	{

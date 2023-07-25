@@ -54,7 +54,7 @@ t_tcp_vars *init_tcp_packet(struct sockaddr_in *addr, char *addr_dest, int port_
 
 bool send_tcp_packet(t_tcp_vars *tcp_vars)
 {
-	struct timeval timeout = {0, 2000};
+	struct timeval timeout = {0, 1500};
 	if (setsockopt(tcp_vars->sock, SOL_SOCKET, SO_SNDTIMEO, &timeout, sizeof(timeout)) < 0)
 	{
 		perror("setsockopt");

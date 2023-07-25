@@ -72,4 +72,4 @@ make
 		`--cap-add=NET_ADMIN`
 	- utiliser les commandes suivantes dans le container:
 		`iptables -P INPUT DROP`
-		`iptables -P INPUT ACCEPT`
+		`iptables -P INPUT ALLOW`
