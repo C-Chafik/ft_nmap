@@ -42,7 +42,7 @@ void pcap_handler_fn(u_char *user, const struct pcap_pkthdr *header, const u_cha
 	return;
 }
 
-struct sockaddr_in *setup_record(pcap_t **handle_pcap)
+struct sockaddr_in *setup_record(pcap_t **handle_pcap, int is_localhost)
 {
 	char errbuf[PCAP_ERRBUF_SIZE] = {0};
 	pcap_if_t *devs = NULL;
@@ -74,7 +74,7 @@ struct sockaddr_in *setup_record(pcap_t **handle_pcap)
 
 	for (pcap_if_t *tmp = devs; tmp != NULL && !stop; tmp = tmp->next)
 	{
-		if (tmp->flags != PCAP_IF_LOOPBACK)
+		if (tmp->flags != PCAP_IF_LOOPBACK && is_localhost != 0)
 		{
 			for (struct pcap_addr *ad = tmp->addresses; ad; ad = ad->next){
 				// printf("\t%s | ", inet_ntoa(((struct sockaddr_in*)ad->rtn)->sin_addr));
@@ -87,6 +87,20 @@ struct sockaddr_in *setup_record(pcap_t **handle_pcap)
 				}
 			}
 		}
+		else if (ft_strncmp(tmp->name, "lo", 2) == 0 && is_localhost == 0)
+		{
+			for (struct pcap_addr *ad = tmp->addresses; ad; ad = ad->next){
+				// printf("\t%s | ", inet_ntoa(((struct sockaddr_in*)ad->rtn)->sin_addr));
+				// printf(" family: %s\n", ((struct sockaddr_in*)ad->rtn)->sin_family == AF_INET ? "AF_INET":"NOPE");
+				if (((struct sockaddr_in*)ad->addr)->sin_family == AF_INET){
+					name = tmp->name;
+					ft_memcpy(rtn, (struct sockaddr_in*)ad->addr, sizeof(struct sockaddr_in));
+					stop = true;
+					break;
+				}
+			}
+
+		}
 	}
 
 	if (!name || !rtn)
@@ -98,7 +112,7 @@ struct sockaddr_in *setup_record(pcap_t **handle_pcap)
 		return NULL;
 	}
 
-	*handle_pcap = pcap_open_live(name, BUFSIZ, 0, 1500, errbuf); 
+	*handle_pcap = pcap_open_live(name, BUFSIZ, 0, 850, errbuf); 
 	if (!*handle_pcap)
 	{
 		pcap_freealldevs(devs);

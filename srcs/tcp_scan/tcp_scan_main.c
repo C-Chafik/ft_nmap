@@ -28,7 +28,7 @@ int tcp_tester(t_context *context)
 
 			for (int k = 0; k < context->port_count; k++)
 			{
-				addr = setup_record(handle_pcap);
+				addr = setup_record(handle_pcap, ft_strncmp(context->hostnames[j], "localhost", 9));
 				if (!addr)
 				{
 					free(handle_pcap);
