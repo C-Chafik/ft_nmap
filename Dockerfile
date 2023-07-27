@@ -1,5 +1,6 @@
 FROM debian:buster
 
+COPY ./services /etc
 RUN 	apt-get update; \
 	apt-get -y install nmap;  \
  	apt-get -y install make; \
@@ -12,6 +13,7 @@ RUN 	apt-get update; \
     apt-get -y install ufw; \
     apt-get -y install wget; \
 	apt-get -y install libpcap-dev
+
 
 
 # USAGE
