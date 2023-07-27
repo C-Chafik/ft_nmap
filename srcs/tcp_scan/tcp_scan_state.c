@@ -48,10 +48,6 @@ void print_result(int rtn, u_char *user, char *scan_type){
 	int port = ((unsigned *)user)[U_SCANNED_PORT];
 	struct servent *serv;
 	serv = getservbyport(htons(port), "tcp");
-	if (serv == NULL) {
-		perror("getservbyport");
-		exit(1);
-	}
 	
 	if (rtn == 1){//* TIMEOUT
 		if (user[U_SCAN_TYPE] == N_XMAS || user[U_SCAN_TYPE] == N_FIN || user[U_SCAN_TYPE] == N_NULL)
@@ -81,7 +77,7 @@ void print_result(int rtn, u_char *user, char *scan_type){
 		return;
 	}
 	printf("%-15s %-15s %-15s %-15s\n% 5d%-10s %-15s %-15s %-15s\n\n",
-		s_port, s_state, s_service, s_scan, ((unsigned *)user)[U_SCANNED_PORT], s_proto, state, serv->s_name, scan_type);
+		s_port, s_state, s_service, s_scan, ((unsigned *)user)[U_SCANNED_PORT], s_proto, state, serv ? serv->s_name : "undefined", scan_type);
 	free(state);
 }
 
