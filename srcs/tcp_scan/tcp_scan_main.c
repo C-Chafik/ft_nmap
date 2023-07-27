@@ -7,6 +7,19 @@ int tcp_tester(t_context *context)
 	// print_parsing_results(context);
 	pcap_t **handle_pcap = NULL;
 	struct sockaddr_in *addr = NULL;
+ 
+ 	/*
+		Faire un tableau de struct avec:
+			- hostname
+			- socket
+			- handle pcap
+			- addr
+			- char *user
+		Commencer par creer un handle_pcap + addr + init_packet pour tous les ip:port possible
+		Puis checker avec poll quand envoyer et listen les packets quand ready
+		On peut faire tous les scans avec la meme socket
+	*/
+
 	handle_pcap = malloc(sizeof(pcap_t *));
 	if (!handle_pcap)
 		return 1;
@@ -36,7 +49,7 @@ int tcp_tester(t_context *context)
 				}
 				if (
 					!setup_record_filter(handle_pcap, ft_itoa(context->ports[k])) ||
-					!tcp_test_port(handle_pcap, addr, final_hostname, context->ports[k], context->scan_types[i]))
+					!tcp_test_port(handle_pcap, addr, final_hostname, context->ports[k], ft_strdup(context->scan_types[i])))//! mutex sur scan type
 				{
 					free(handle_pcap);
 					free(addr);

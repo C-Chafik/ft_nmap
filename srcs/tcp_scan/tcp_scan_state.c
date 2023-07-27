@@ -85,7 +85,7 @@ void print_result(int rtn, u_char *user, char *scan_type){
 	}
 }
 
-bool tcp_test_port(pcap_t **handle_pcap, struct sockaddr_in *addr, char *ip_dest, int port, char *scan_type)
+bool tcp_test_port(pcap_t **handle_pcap, struct sockaddr_in *addr, char *ip_dest, int port, char *scan_type) 
 {
 	u_char user[BUFSIZ] = {0};
 	user[U_SCAN_TYPE] = which_scan(scan_type);
@@ -107,6 +107,7 @@ bool tcp_test_port(pcap_t **handle_pcap, struct sockaddr_in *addr, char *ip_dest
 
 	print_result(rtn, user, scan_type);
 
+	free(scan_type);
 	pcap_breakloop(*handle_pcap);
 	free(tcp_vars);
 	return true;
