@@ -85,7 +85,7 @@ void print_result(int rtn, u_char *user, char *scan_type){
 	}
 }
 
-bool tcp_test_port(pcap_t **handle_pcap, struct sockaddr_in *addr, char *ip_dest, int port, char *scan_type) 
+bool tcp_test_port(pcap_t **handle_pcap, struct sockaddr_in *addr, char *ip_dest, int port, char *scan_type, int sock) 
 {
 	u_char user[BUFSIZ] = {0};
 	user[U_SCAN_TYPE] = which_scan(scan_type);
@@ -93,7 +93,7 @@ bool tcp_test_port(pcap_t **handle_pcap, struct sockaddr_in *addr, char *ip_dest
 		return false;
 	((unsigned*)user)[U_SCANNED_PORT] = port;
 
-	t_tcp_vars *tcp_vars = init_tcp_packet(addr, ip_dest, port, user[U_SCAN_TYPE]);
+	t_tcp_vars *tcp_vars = init_tcp_packet(sock, addr, ip_dest, port, user[U_SCAN_TYPE]);
 	if (!tcp_vars || !send_tcp_packet(tcp_vars))
 		return false;
 

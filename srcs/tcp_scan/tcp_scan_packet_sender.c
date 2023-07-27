@@ -2,7 +2,7 @@
 #include "../includes/includes.h"
 #include "../includes/define.h"
 
-t_tcp_vars *init_tcp_packet(struct sockaddr_in *addr, char *addr_dest, int port_dest, u_char flags)
+t_tcp_vars *init_tcp_packet(int sock, struct sockaddr_in *addr, char *addr_dest, int port_dest, u_char flags)
 {
 	t_tcp_vars *tcp_vars = NULL;
 	if (!(tcp_vars = ft_calloc(1, sizeof(t_tcp_vars))))
@@ -10,10 +10,7 @@ t_tcp_vars *init_tcp_packet(struct sockaddr_in *addr, char *addr_dest, int port_
 	ft_bzero(tcp_vars->datagram, 4096);
 	// ft_bzero(tcp_vars->iph, sizeof(struct iphdr));
 
-	if (tcp_vars->sock = socket(AF_INET, SOCK_RAW, IPPROTO_TCP) == -1){
-		free(tcp_vars);
-		return NULL;
-	}
+	tcp_vars->sock = sock;
 	tcp_vars->iph = (struct iphdr *)tcp_vars->datagram;
 	tcp_vars->tcph = (struct tcphdr *)(tcp_vars->datagram + sizeof(struct ip));
 
@@ -40,17 +37,6 @@ t_tcp_vars *init_tcp_packet(struct sockaddr_in *addr, char *addr_dest, int port_
 	memcpy(tcp_vars->pseudogram + sizeof(struct pseudo_header), tcp_vars->tcph, sizeof(struct tcphdr));
 
 	tcp_vars->tcph->check = csum((unsigned short *)tcp_vars->pseudogram, tcp_vars->psize);
-
-	int one = 1;
-	const int *val = &one;
-
-	if (setsockopt(tcp_vars->sock, IPPROTO_IP, IP_HDRINCL, val, sizeof(one)) < 0)
-	{
-		perror("Error setting IP_HDRINCL");
-		free(tcp_vars->pseudogram);
-		close(tcp_vars->sock);
-		return NULL;
-	}
 
 	return tcp_vars;
 }

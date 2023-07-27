@@ -27,7 +27,7 @@ void init_tcp_header(struct tcphdr **tcph, int port_dest, u_char flags);
 void init_ip_header(struct iphdr **iph, char *datagram, in_addr_t s_addr);
 unsigned short csum(unsigned short *ptr, int nbytes);
 
-t_tcp_vars *init_tcp_packet(struct sockaddr_in *addr, char *addr_dest, int port_dest, u_char flags);
+t_tcp_vars *init_tcp_packet(int sock, struct sockaddr_in *addr, char *addr_dest, int port_dest, u_char flags);
 bool send_tcp_packet(t_tcp_vars *tcp_vars);
 
 void pcap_handler_fn(u_char *user, const struct pcap_pkthdr *header, const u_char *packet);
@@ -35,7 +35,7 @@ struct sockaddr_in *setup_record(pcap_t **handle_pcap, int is_localhost);
 bool setup_record_filter(pcap_t **handle_pcap, char *port);
 
 short check_tcp_port_state(const u_char tcp_header, u_char flags);
-bool tcp_test_port(pcap_t **handle_pcap, struct sockaddr_in *addr, char *ip_dest, int portt, char *scan_type);
+bool tcp_test_port(pcap_t **handle_pcap, struct sockaddr_in *addr, char *ip_dest, int portt, char *scan_type, int sock);
 
 char *resolve_host(const char *hostname);
 

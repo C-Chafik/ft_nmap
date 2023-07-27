@@ -2,45 +2,55 @@
 #include "../includes/includes.h"
 #include "../includes/define.h"
 
+int create_socket(){
+	int sock = -1;
+	int one = 1;
+	const int *val = &one;	
+	if ((sock = socket(AF_INET, SOCK_RAW, IPPROTO_TCP)) == -1 || setsockopt(sock, IPPROTO_IP, IP_HDRINCL, val, sizeof(one)) < 0){
+		perror("socket");
+		return false;
+	}
+
+	return sock;
+}
+
 int tcp_tester(t_context *context)
 {
 	// print_parsing_results(context);
 	pcap_t **handle_pcap = NULL;
 	struct sockaddr_in *addr = NULL;
  
- 	/*
-		Faire un tableau de struct avec:
-			- hostname
-			- socket
-			- handle pcap
-			- addr
-			- char *user
-		Commencer par creer un handle_pcap + addr + init_packet pour tous les ip:port possible
-		Puis checker avec poll quand envoyer et listen les packets quand ready
-		On peut faire tous les scans avec la meme socket
-	*/
-
 	handle_pcap = malloc(sizeof(pcap_t *));
 	if (!handle_pcap)
 		return 1;
 
-	for (int i = 0; i < SCAN_COUNT - 1; i++){//! -1 cause of UDP
-		if (!context->scan_types[i]){
-			continue;
+	int *sockets = ft_calloc(context->target_count * context->port_count , sizeof(int));
+	int count = 0;
+	for (int j = 0; context->hostnames[j]; j++){
+		for (int k = 0; k < context->port_count; k++){
+			sockets[count] = create_socket();
+			++count;
 		}
-		for (int j = 0; context->hostnames[j]; j++)
+	}
+
+	count = 0;
+	for (int j = 0; context->hostnames[j]; j++)
+	{
+		char *final_hostname = NULL;
+
+		final_hostname = resolve_host(context->hostnames[j]);
+		if (!final_hostname)
 		{
-			char *final_hostname = NULL;
+			printf("Could not resolve hostname : %s\n", context->hostnames[j]);
+			continue ;
+		}
 
-			final_hostname = resolve_host(context->hostnames[j]);
-			if (!final_hostname)
-			{
-				printf("%s, Could not resolve hostname : %s\n", context->scan_types[i], context->hostnames[j]);
-				continue ;
-			}
-
-			for (int k = 0; k < context->port_count; k++)
-			{
+		for (int k = 0; k < context->port_count; k++)
+		{
+			for (int i = 0; i < SCAN_COUNT - 1; i++){//! -1 cause of UDP
+				if (!context->scan_types[i]){
+					continue;
+				}
 				addr = setup_record(handle_pcap, ft_strncmp(context->hostnames[j], "localhost", 9));
 				if (!addr)
 				{
@@ -49,7 +59,14 @@ int tcp_tester(t_context *context)
 				}
 				if (
 					!setup_record_filter(handle_pcap, ft_itoa(context->ports[k])) ||
-					!tcp_test_port(handle_pcap, addr, final_hostname, context->ports[k], ft_strdup(context->scan_types[i])))//! mutex sur scan type
+					!tcp_test_port(
+						handle_pcap,
+						addr,
+						final_hostname,
+						context->ports[k],
+						ft_strdup(context->scan_types[i]),
+						sockets[count]
+					))//! mutex sur scan type
 				{
 					free(handle_pcap);
 					free(addr);
@@ -57,13 +74,15 @@ int tcp_tester(t_context *context)
 				}
 				free(addr);
 				pcap_close(*handle_pcap);
+				++count;
 			}
-
-			if (final_hostname)
-				free(final_hostname);
 		}
+
+		if (final_hostname)
+			free(final_hostname);
 	}
 
+	free(sockets);
 	free(handle_pcap);
 	return 0;
 }

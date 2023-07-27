@@ -72,4 +72,4 @@ Pour filter et unfilter les ports d'un container:
 	`--cap-add=NET_ADMIN`
 - utiliser les commandes suivantes dans le container:
 	`iptables -P INPUT DROP`
-	`iptables -P INPUT ALLOW`
+	`iptables -P INPUT ACCEPT`
