@@ -2,7 +2,7 @@
 #include "../includes/includes.h"
 #include "../includes/define.h"
 
-t_tcp_vars *init_tcp_packet(struct sockaddr_in *addr, char *addr_dest, int port_dest, u_char flags)//! change addr_dest to dynamic
+t_tcp_vars *init_tcp_packet(struct sockaddr_in *addr, char *addr_dest, int port_dest, u_char flags)
 {
 	t_tcp_vars *tcp_vars = NULL;
 	if (!(tcp_vars = ft_calloc(1, sizeof(t_tcp_vars))))

@@ -54,6 +54,7 @@ void print_result(int rtn, u_char *user, char *scan_type){
 			state = ft_strdup("open | filtered");
 		if (user[U_SCAN_TYPE] == N_SYN || user[U_SCAN_TYPE] == N_ACK)
 			state = ft_strdup("filtered");
+			// state = NULL;//! same as nmap
 	}
 	else {
 		short rtn_state = check_tcp_port_state(user[U_TCP_RTN], user[U_SCAN_TYPE]);
@@ -63,6 +64,7 @@ void print_result(int rtn, u_char *user, char *scan_type){
 		else{
 			if (rtn_state == CLOSE)
 				state = ft_strdup("close");
+				// state = /*ft_strdup("close")*/NULL;//! same as nmap
 			else if (rtn_state == OPEN)
 				state = ft_strdup("open");
 			else if (rtn_state == (OPEN | FILTERED))
@@ -72,13 +74,15 @@ void print_result(int rtn, u_char *user, char *scan_type){
 			}
 		}
 	}
-	if (!state){
-		fprintf(stderr, ANSI_COLOR_RED"Fail to malloc the string for the state\n"ANSI_COLOR_RESET);
-		return;
+	// if (!state){
+	// 	fprintf(stderr, ANSI_COLOR_RED"Fail to malloc the string for the state\n"ANSI_COLOR_RESET);
+	// 	return;
+	// }
+	if (state){
+		printf("%-15s %-15s %-15s %-15s\n% 5d%-10s %-15s %-15s %-15s\n\n",
+			s_port, s_state, s_service, s_scan, ((unsigned *)user)[U_SCANNED_PORT], s_proto, state, serv ? serv->s_name : "undefined", scan_type);
+		free(state);
 	}
-	printf("%-15s %-15s %-15s %-15s\n% 5d%-10s %-15s %-15s %-15s\n\n",
-		s_port, s_state, s_service, s_scan, ((unsigned *)user)[U_SCANNED_PORT], s_proto, state, serv ? serv->s_name : "undefined", scan_type);
-	free(state);
 }
 
 bool tcp_test_port(pcap_t **handle_pcap, struct sockaddr_in *addr, char *ip_dest, int port, char *scan_type)
