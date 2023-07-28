@@ -2,7 +2,10 @@
 #include "../includes/includes.h"
 #include "../includes/define.h"
 
-#define TEST_INIT_LIST(X) if (!(X)) {perror("test fail! Syscall status"); clean_list(sockets_info); return NULL;}
+#define TEST_INIT_LIST(X) if (!(X)) {perror("test fail! Syscall status"); \
+	clean_list(sockets_info); \
+	free(final_hostname); \
+	return NULL;}
 #define FREE_IF_EXIST(X) if (X) {free(X);} 
 
 int create_socket(){
@@ -22,7 +25,7 @@ int create_socket(){
 	return sock;
 }
 
-void clean_list(struct socket_info *sockets_info){
+void clean_list(struct socket_info *sockets_info){//free petit a petit la memoire (laisser les tous FREE_IF_EXIT en backup ?)
 	if (!sockets_info)
 		return ;
 	struct socket_info *sockets_info_cpy = NULL;\
@@ -30,6 +33,7 @@ void clean_list(struct socket_info *sockets_info){
 		sockets_info_cpy = sockets_info->next;
 		FREE_IF_EXIST(sockets_info->handle_pcap)
 		FREE_IF_EXIST(sockets_info->addr)
+		FREE_IF_EXIST(sockets_info->final_hostname)
 		free(sockets_info);
 		if (!sockets_info_cpy)
 			break;
@@ -40,9 +44,10 @@ void clean_list(struct socket_info *sockets_info){
 struct socket_info *init_list(t_context *context){
 	struct socket_info *sockets_info = NULL;
 	struct socket_info *sockets_info_cpy = sockets_info;
-	// struct socket_info *sockets_info = malloc(context->target_count * context->port_count * sizeof(struct socket_info));
-	// int *sockets = ft_calloc(context->target_count * context->port_count , sizeof(int));
+	char *final_hostname = NULL;
+
 	for (int j = 0; context->hostnames[j]; j++){
+		final_hostname = resolve_host(context->hostnames[j]);
 		for (int k = 0; k < context->port_count; k++){
 			if (!sockets_info){
 				TEST_INIT_LIST(sockets_info = ft_calloc(1, sizeof(struct socket_info)))
@@ -54,7 +59,12 @@ struct socket_info *init_list(t_context *context){
 			TEST_INIT_LIST(sockets_info_cpy->socket = create_socket())
 			TEST_INIT_LIST(sockets_info_cpy->handle_pcap = ft_calloc(1, sizeof(pcap_t *)))
 			TEST_INIT_LIST(sockets_info_cpy->addr = setup_record(sockets_info_cpy->handle_pcap, ft_strncmp(context->hostnames[j], "localhost", 9)))
+			TEST_INIT_LIST(sockets_info_cpy->final_hostname = ft_strdup(final_hostname))
+			TEST_INIT_LIST(sockets_info_cpy->port = context->ports[k])
+			//! ne pas forcement tous init ici, utiliser la puissance des thread de + possible
+			// => creer une autre fonction pour init de la meme facon ce qui n'est pas les sockets
 		}
+		free(final_hostname);
 	}
 
 	return sockets_info;
@@ -62,25 +72,14 @@ struct socket_info *init_list(t_context *context){
 
 int tcp_tester(t_context *context)
 {
-	struct sockaddr_in *addr = NULL;
-
 	struct socket_info *sockets_info = init_list(context);
 	if (!sockets_info)
-		return 2;
+		return 1;
 	struct socket_info *sockets_info_cpy = sockets_info;
 
 	sockets_info_cpy = sockets_info;
 	for (int j = 0; context->hostnames[j]; j++)
 	{
-		char *final_hostname = NULL;
-
-		final_hostname = resolve_host(context->hostnames[j]);
-		if (!final_hostname)
-		{
-			printf("Could not resolve hostname : %s\n", context->hostnames[j]);
-			continue ;
-		}
-
 		for (int k = 0; k < context->port_count; k++, sockets_info_cpy = sockets_info_cpy->next)
 		{
 			for (int i = 0; i < SCAN_COUNT - 1; i++){//! -1 cause of UDP
@@ -92,22 +91,18 @@ int tcp_tester(t_context *context)
 					!tcp_test_port(
 						sockets_info_cpy->handle_pcap,
 						sockets_info_cpy->addr,
-						final_hostname,
-						context->ports[k],
+						sockets_info_cpy->final_hostname,
+						sockets_info_cpy->port,
 						ft_strdup(context->scan_types[i]),
 						sockets_info_cpy->socket
 					))//! mutex sur scan type
 				{
-					free(addr);
-					return 4;
+					clean_list(sockets_info);
+					return 2;
 				}
-				free(addr);
 				pcap_close(*sockets_info_cpy->handle_pcap);
 			}
 		}
-
-		if (final_hostname)
-			free(final_hostname);
 	}
 
 	clean_list(sockets_info);

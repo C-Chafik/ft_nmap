@@ -69,7 +69,11 @@ void print_result(int rtn, u_char *user, char *scan_type){
 				state = ft_strdup("open");
 			else if (rtn_state == (OPEN | FILTERED))
 				state = ft_strdup("open | filtered");
-			else{
+			else{//TIMEOUT
+				// if (user[U_SCAN_TYPE] == N_XMAS || user[U_SCAN_TYPE] == N_FIN || user[U_SCAN_TYPE] == N_NULL)
+				// 	state = ft_strdup("open | filtered");
+				// if (user[U_SCAN_TYPE] == N_SYN || user[U_SCAN_TYPE] == N_ACK)
+				// 	state = ft_strdup("filtered");
 				printf("AGAIN!? (rtn: %d)\n", rtn_state);
 			}
 		}

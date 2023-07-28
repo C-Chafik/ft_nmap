@@ -12,6 +12,7 @@ char *resolve_host(const char *hostname)
     if ((status = getaddrinfo(hostname, NULL, &hints, &res)) != 0) 
     {
         // fprintf(stderr, "getaddrinfo: %s\n", gai_strerror(status));
+        printf("Could not resolve hostname : %s\n", hostname);
         return NULL;
     }
 
