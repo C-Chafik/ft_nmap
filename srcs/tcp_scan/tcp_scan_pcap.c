@@ -112,7 +112,7 @@ struct sockaddr_in *setup_record(pcap_t **handle_pcap, int is_localhost)
 		return NULL;
 	}
 
-	*handle_pcap = pcap_open_live(name, BUFSIZ, 0, 250, errbuf); 
+	*handle_pcap = pcap_open_live(name, BUFSIZ, 0, 1000, errbuf); 
 	if (!*handle_pcap)
 	{
 		pcap_freealldevs(devs);

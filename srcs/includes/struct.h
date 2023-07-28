@@ -88,4 +88,14 @@ typedef struct s_context
 	char **hostnames;			  // All the hostname to map
 } t_context;
 
+struct socket_info{
+	int socket;
+	pcap_t **handle_pcap;
+	struct sockaddr_in *addr;
+	char *final_hostname;
+	int port;
+	char *scan_types;
+	struct socket_info *next;
+};
+
 #endif
