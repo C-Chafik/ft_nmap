@@ -8,9 +8,14 @@ MAGENTA='\x1b[35m'
 CYAN='\x1b[36m'
 RESET='\x1b[0m'
 
- echo -e "${BLUE}SYN: " && nmap -sS 172.17.0.3 -p1-1024 && echo -e "${RESET}" && \
- echo -e "${YELLOW}ACK: " && nmap -sA 172.17.0.3 -p1-1024 && echo -e "${RESET}" && \
- echo -e "${GREEN}NULL: " && nmap -sN 172.17.0.3 -p1-1024 && echo -e "${RESET}" && \
- echo -e "${MAGENTA}FIN: " && nmap -sF 172.17.0.3 -p1-1024 && echo -e "${RESET}" && \
- echo -e "${CYAN}XMAS: " && nmap -sX 172.17.0.3 -p1-1024 && echo -e "${RESET}" #&& \
-#  echo -e "${RED}UDP: " && nmap -sU 172.17.0.3 -p1-1024 && echo -e "${RESET}"
+ echo -e "${BLUE}REAL SYN: " && nmap -sS $1 -p $2 && echo -e "${RESET}" && \
+ echo -e "${GREEN}FT   SYN: " && ./ft_nmap --ip $1 --ports $2 --scan SYN && echo -e "${RESET}" && \
+ echo -e "${BLUE}NULL: " && nmap -sN $1 -p $2 && echo -e "${RESET}" && \
+ echo -e "${GREEN}FT   NULL: " && ./ft_nmap --ip $1 --ports $2 --scan NULL && echo -e "${RESET}" && \
+ echo -e "${BLUE}ACK: " && nmap -sA $1 -p $2 && echo -e "${RESET}" && \
+ echo -e "${GREEN}FT   ACK: " && ./ft_nmap --ip $1 --ports $2 --scan ACK && echo -e "${RESET}" && \
+ echo -e "${BLUE}FIN: " && nmap -sF $1 -p $2 && echo -e "${RESET}" && \
+ echo -e "${GREEN}FT   FIN: " && ./ft_nmap --ip $1 --ports $2 --scan FIN && echo -e "${RESET}" && \
+ echo -e "${BLUE}XMAS: " && nmap -sX $1 -p $2 && echo -e "${RESET}" #&& \
+ echo -e "${GREEN}FT   XMAS: " && ./ft_nmap --ip $1 --ports $2 --scan XMAS && echo -e "${RESET}" && \
+#  echo -e "${RED}UDP: " && nmap -sU $1 -p $2 && echo -e "${RESET}"

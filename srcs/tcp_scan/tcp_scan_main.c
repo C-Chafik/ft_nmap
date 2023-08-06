@@ -84,6 +84,8 @@ int tcp_tester(t_context *context)
 	if (!sockets_info)
 		return 1;
 	struct socket_info *sockets_info_cpy = sockets_info;
+	struct pollfd *fds;
+	ft_bzero(fds, sizeof(struct pollfd));
 
 	sockets_info_cpy = sockets_info;
 	for (int j = 0; context->hostnames[j]; j++)
@@ -114,8 +116,9 @@ int tcp_tester(t_context *context)
 					clean_list(sockets_info);
 					return 3;
 				}
-				pcap_close(*sockets_info_cpy->handle_pcap);
 			}
+			pcap_close(*sockets_info_cpy->handle_pcap);
+			close(sockets_info_cpy->socket);
 			clean_in_thread(sockets_info_cpy);
 		}
 		free(final_hostname);

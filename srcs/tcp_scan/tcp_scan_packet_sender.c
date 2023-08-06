@@ -61,6 +61,6 @@ bool send_tcp_packet(t_tcp_vars *tcp_vars)
 	}
 
 	free(tcp_vars->pseudogram);
-	close(tcp_vars->sock);
+	// close(tcp_vars->sock);
 	return true;
 }
