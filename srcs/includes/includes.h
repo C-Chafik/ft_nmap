@@ -19,12 +19,14 @@
 # include <netinet/if_ether.h>
 # include <string.h>
 # include <arpa/inet.h>
-# include <netinet/tcp.h>	
+# include <netinet/tcp.h>
+# include <netinet/udp.h>	
 # include <netinet/ip.h>	
 # include <errno.h>
 # include <poll.h>
 # include <netdb.h>
 # include <sys/types.h>
 # include <ifaddrs.h>
+# include <netinet/ip_icmp.h>
 
 #endif

@@ -15,6 +15,11 @@
 # define U_TCP_RTN 20
 # define U_SCANNED_PORT 4
 # define U_SCAN_TYPE 30
+# define U_ICMP_RTN 78
+
+#define U_IS_ICMP 40
+#define ICMP_RSP_TYPE_OFF 34
+#define ICMP_HEADER_LENGTH 8
 
 # define PORT_SRC_OFF 34 
 # define PORT_DST_OFF 36
