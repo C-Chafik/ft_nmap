@@ -63,6 +63,12 @@ typedef struct s_target
 	char *hostname;
 } t_target;
 
+typedef struct udp_vars {
+	char datagram[4096];
+	struct sockaddr_in sin;
+    int sock;
+} t_udp_vars;
+
 typedef struct tcp_vars
 {
 	char datagram[4096];

@@ -2,16 +2,18 @@ SRCS =	./srcs/main.c \
 		./srcs/parsing.c \
 		./srcs/utils.c \
 		./srcs/memory.c \
-		./srcs/udp_tester.c \
+		./srcs/port_scanner.c \
+		./srcs/resolve_host.c \
 		./srcs/get_next_line/get_next_line.c \
 		./srcs/get_next_line/get_next_line_utils.c \
-		./srcs/tcp_scan/tcp_scan_main.c \
 		./srcs/tcp_scan/tcp_scan_debug.c \
 		./srcs/tcp_scan/tcp_scan_headers.c \
 		./srcs/tcp_scan/tcp_scan_packet_sender.c \
 		./srcs/tcp_scan/tcp_scan_pcap.c \
 		./srcs/tcp_scan/tcp_scan_state.c \
-		./srcs/resolve_host.c \
+		./srcs/udp_scan/udp_scan_state.c \
+		./srcs/udp_scan/udp_scan_pcap.c \
+		./srcs/udp_scan/udp_scan_packet_sender.c \
 
 OBJS =	${SRCS:.c=.o}
 

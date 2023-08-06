@@ -41,8 +41,8 @@ static void init_context(t_context *context)
 
 int main(int ac, char **av)
 {
-    t_context context;
-    int exit_code;
+    t_context   context;
+    int         exit_code;
 
     if (ac < 2)
         return EXIT_FAILURE;
@@ -56,9 +56,8 @@ int main(int ac, char **av)
         return exit_code;
     }
 
-    int rtn = tcp_tester(&context);
-    // print_parsing_results(&context);
+    exit_code = port_scanner(&context);
 
     free_context(&context);
-    return rtn;
+    return exit_code;
 }
