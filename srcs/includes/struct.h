@@ -89,7 +89,7 @@ typedef struct s_context
 } t_context;
 
 struct socket_info{
-	int socket;
+	struct pollfd s_fd;
 	pcap_t **handle_pcap;
 	struct sockaddr_in *addr;
 	char *final_hostname;

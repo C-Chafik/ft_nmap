@@ -2,6 +2,7 @@
 #include "../includes/includes.h"
 #include "../includes/define.h"
 
+//! probleme de result avec NULL FIN XMAS
 u_char which_scan(char *scan_type){
 	if (!ft_strncmp(scan_type, "SYN", 3))
 		return N_SYN;
@@ -89,30 +90,30 @@ void print_result(int rtn, u_char *user, char *scan_type){
 	}
 }
 
-bool tcp_test_port(pcap_t **handle_pcap, struct sockaddr_in *addr, char *ip_dest, int port, char *scan_type, int sock) 
+bool tcp_test_port(struct socket_info *sockets_info, char *scan_type) 
 {
 	u_char user[BUFSIZ] = {0};
 	user[U_SCAN_TYPE] = which_scan(scan_type);
 	if (user[0] == 127)
 		return false;
-	((unsigned*)user)[U_SCANNED_PORT] = port;
+	((unsigned*)user)[U_SCANNED_PORT] = sockets_info->port;
 
-	t_tcp_vars *tcp_vars = init_tcp_packet(sock, addr, ip_dest, port, user[U_SCAN_TYPE]);
+	t_tcp_vars *tcp_vars = init_tcp_packet(sockets_info->s_fd.fd, sockets_info->addr, sockets_info->final_hostname, sockets_info->port, user[U_SCAN_TYPE]);
 	if (!tcp_vars || !send_tcp_packet(tcp_vars))
 		return false;
 
-	int rtn = pcap_dispatch(*handle_pcap, 65535, pcap_handler_fn, user);
+	int rtn = pcap_dispatch(*sockets_info->handle_pcap, 65535, pcap_handler_fn, user);
 	if (rtn == PCAP_ERROR)
 	{
-		pcap_geterr(*handle_pcap);
-		pcap_breakloop(*handle_pcap);
+		pcap_geterr(*sockets_info->handle_pcap);
+		pcap_breakloop(*sockets_info->handle_pcap);
 		return false;
 	}
 
 	print_result(rtn, user, scan_type);
 
 	free(scan_type);
-	pcap_breakloop(*handle_pcap);
+	pcap_breakloop(*sockets_info->handle_pcap);
 	free(tcp_vars);
 	return true;
 }

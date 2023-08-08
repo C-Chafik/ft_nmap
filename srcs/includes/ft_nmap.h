@@ -35,10 +35,14 @@ struct sockaddr_in *setup_record(pcap_t **handle_pcap, int is_localhost);
 bool setup_record_filter(pcap_t **handle_pcap, char *port);
 
 short check_tcp_port_state(const u_char tcp_header, u_char flags);
-bool tcp_test_port(pcap_t **handle_pcap, struct sockaddr_in *addr, char *ip_dest, int portt, char *scan_type, int sock);
+bool tcp_test_port(struct socket_info *sockets_info, char *scan_type);
 
 char *resolve_host(const char *hostname);
 
-
+int create_socket();
+void clean_list(struct socket_info *sockets_info);
+void clean_in_thread(struct socket_info *sockets_info);
+struct socket_info *init_list(t_context *context);
+bool init_in_thread(struct socket_info *sockets_info, char *hostname, int port);
 
 #endif

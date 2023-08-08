@@ -12,6 +12,7 @@ SRCS =	./srcs/main.c \
 		./srcs/tcp_scan/tcp_scan_pcap.c \
 		./srcs/tcp_scan/tcp_scan_state.c \
 		./srcs/resolve_host.c \
+		./srcs/tcp_scan/tcp_list_utils.c \
 
 OBJS =	${SRCS:.c=.o}
 
