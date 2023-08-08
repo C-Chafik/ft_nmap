@@ -43,14 +43,14 @@ t_tcp_vars *init_tcp_packet(int sock, struct sockaddr_in *addr, char *addr_dest,
 
 bool send_tcp_packet(t_tcp_vars *tcp_vars)
 {
-	// struct timeval timeout = {0, 1500};
-	// if (setsockopt(tcp_vars->sock, SOL_SOCKET, SO_SNDTIMEO, &timeout, sizeof(timeout)) < 0)
-	// {
-	// 	perror("setsockopt");
-	// 	free(tcp_vars->pseudogram);
-	// 	close(tcp_vars->sock);
-	// 	return false;
-	// }
+	struct timeval timeout = {0, 1500};
+	if (setsockopt(tcp_vars->sock, SOL_SOCKET, SO_SNDTIMEO, &timeout, sizeof(timeout)) < 0)
+	{
+		perror("setsockopt");
+		free(tcp_vars->pseudogram);
+		close(tcp_vars->sock);
+		return false;
+	}
 
 	if (sendto(tcp_vars->sock, tcp_vars->datagram, tcp_vars->iph->tot_len, 0, (struct sockaddr *)&tcp_vars->sin, sizeof(tcp_vars->sin)) < 0)
 	{

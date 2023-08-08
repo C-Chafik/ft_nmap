@@ -61,8 +61,7 @@ struct socket_info *init_list(t_context *context){
 				TEST_INIT_LIST(sockets_info_cpy->next = ft_calloc(1, sizeof(struct socket_info)))
 				sockets_info_cpy = sockets_info_cpy->next;
 			}
-			TEST_INIT_LIST(sockets_info_cpy->s_fd.fd = create_socket())
-			sockets_info_cpy->s_fd.events = POLLOUT | POLLWRBAND;
+			TEST_INIT_LIST(sockets_info_cpy->fd = create_socket())
 		}
 		TEST_INIT_LIST(sockets_info_cpy->final_hostname = resolve_host(context->hostnames[j]))
 	}

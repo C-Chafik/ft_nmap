@@ -98,7 +98,7 @@ bool tcp_test_port(struct socket_info *sockets_info, char *scan_type)
 		return false;
 	((unsigned*)user)[U_SCANNED_PORT] = sockets_info->port;
 
-	t_tcp_vars *tcp_vars = init_tcp_packet(sockets_info->s_fd.fd, sockets_info->addr, sockets_info->final_hostname, sockets_info->port, user[U_SCAN_TYPE]);
+	t_tcp_vars *tcp_vars = init_tcp_packet(sockets_info->fd, sockets_info->addr, sockets_info->final_hostname, sockets_info->port, user[U_SCAN_TYPE]);
 	if (!tcp_vars || !send_tcp_packet(tcp_vars))
 		return false;
 

@@ -32,8 +32,8 @@ void pcap_handler_fn(u_char *user, const struct pcap_pkthdr *header, const u_cha
 	tcp_header_length = ((*(tcp_header + 12)) & 0xF0) >> 4;
 	tcp_header_length = tcp_header_length * 4;
 
-	// debug_print_tcp_header(tcp_header, tcp_header_length);
-	// debug_print_tcp_flags(tcp_header, tcp_header_length, packet);
+	debug_print_tcp_header(tcp_header, tcp_header_length);
+	debug_print_tcp_flags(tcp_header, tcp_header_length, packet);
 	if (htons(*(unsigned *)(packet + PORT_SRC_OFF)) != ((unsigned *)user)[U_SCANNED_PORT])
 		return;
 	user[U_TCP_RTN] = *(tcp_header + TCP_RSP_FLAG_OFF);
@@ -112,7 +112,7 @@ struct sockaddr_in *setup_record(pcap_t **handle_pcap, int is_localhost)
 		return NULL;
 	}
 
-	*handle_pcap = pcap_open_live(name, BUFSIZ, 0, 2000, errbuf); 
+	*handle_pcap = pcap_open_live(name, BUFSIZ, 0, 1000, errbuf); 
 	if (!*handle_pcap)
 	{
 		pcap_freealldevs(devs);
