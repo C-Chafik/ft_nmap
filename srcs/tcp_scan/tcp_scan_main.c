@@ -14,11 +14,11 @@ int tcp_tester(t_context *context)
 	{
 		for (int k = 0; k < context->port_count; k++, sockets_info_cpy = sockets_info_cpy->next)
 		{
+			if (!init_in_thread(sockets_info_cpy, context->hostnames[j], context->ports[k])){
+				clean_list(sockets_info);
+				return 2;
+			}
 			for (int i = 0; i < SCAN_COUNT - 1; i++){//! -1 cause of UDP
-				if (!init_in_thread(sockets_info_cpy, context->hostnames[j], context->ports[k])){
-					clean_list(sockets_info);
-					return 2;
-				}
 				if (!context->scan_types[i]){
 					continue;
 				}
@@ -32,8 +32,8 @@ int tcp_tester(t_context *context)
 					clean_list(sockets_info);
 					return 3;
 				}
-				pcap_close(*sockets_info_cpy->handle_pcap);
 			}
+			pcap_close(*sockets_info_cpy->handle_pcap);
 			close(sockets_info_cpy->fd);
 			clean_in_thread(sockets_info_cpy);
 		}

@@ -2,11 +2,11 @@
 #include "../includes/includes.h"
 #include "../includes/define.h"
 
-#define TEST_INIT_LIST(X) if (!(X)) {perror("test fail! Syscall status"); \
+#define TEST_INIT_LIST(X) if (!(X)) {perror("Test fail! Syscall status"); \
 	clean_list(sockets_info); \
 	return NULL;}
 
-#define TEST_INIT_LIST_TH(X) if (!(X)) {perror("test fail! Syscall status"); return false;}
+#define TEST_INIT_LIST_TH(X) if (!(X)) {perror("Test fail! Syscall status"); return false;}
 #define FREE_IF_EXIST(X) if (X) {free(X);X = NULL;} 
 
 int create_socket(){
@@ -62,8 +62,8 @@ struct socket_info *init_list(t_context *context){
 				sockets_info_cpy = sockets_info_cpy->next;
 			}
 			TEST_INIT_LIST(sockets_info_cpy->fd = create_socket())
+			TEST_INIT_LIST(sockets_info_cpy->final_hostname = resolve_host(context->hostnames[j]))
 		}
-		TEST_INIT_LIST(sockets_info_cpy->final_hostname = resolve_host(context->hostnames[j]))
 	}
 
 	return sockets_info;
