@@ -73,3 +73,7 @@ Pour filter et unfilter les ports d'un container:
 - utiliser les commandes suivantes dans le container:
 	`iptables -P INPUT DROP`
 	`iptables -P INPUT ACCEPT`
+
+## Run gdb avec les thread dans docker
+
+Utilizer la flag `--security-opt seccomp=unconfined` au moment de run de container
