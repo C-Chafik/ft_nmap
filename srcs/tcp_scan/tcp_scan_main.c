@@ -10,14 +10,16 @@ struct thread_info {
 	struct socket_info *sockets_info_cpy;
 	t_context *context;
 };
-pthread_mutex_t lock_context;
-pthread_mutex_t lock_list;
-pthread_mutex_t lock_list_cpy;
+// pthread_mutex_t lock_context;
+// pthread_mutex_t lock_list;
+// pthread_mutex_t lock_list_cpy;
 
 void *start_thread(void *arg){
+	if (!arg)
+		pthread_exit((void*)1);
 	struct thread_info* tinfo = (struct thread_info*)arg;
 
-	printf("ok");
+	printf("ok (%ld)\n", tinfo->thread_id);
 	for (int j = 0; tinfo->context->hostnames[j]; j++)
 	{
 		for (int k = 0; k < tinfo->context->port_count; k++, tinfo->sockets_info_cpy = tinfo->sockets_info_cpy->next)
@@ -47,7 +49,20 @@ void *start_thread(void *arg){
 		}
 	}
 
+	for (int j = 0; tinfo->context->hostnames[j]; j++)
+		free(tinfo->context->hostnames[j]);
+	free(tinfo->context->hostnames);
+	for (int k = 0; k < SCAN_COUNT; k++)
+		if (tinfo->context->scan_types[k])
+			free(tinfo->context->scan_types[k]);
+	free(tinfo->context);
 	return NULL;
+}
+
+int count_hosts(char **hosts){
+	int count = 0;
+	for (; hosts[count]; count++);
+	return count;
 }
 
 int tcp_tester(t_context *context)
@@ -64,26 +79,30 @@ int tcp_tester(t_context *context)
 			return 4;
 	}
 
-	pthread_mutex_init(&lock_context, NULL);
-	pthread_mutex_init(&lock_list, NULL);
-	pthread_mutex_init(&lock_list_cpy, NULL);
+	// pthread_mutex_init(&lock_context, NULL);
+	// pthread_mutex_init(&lock_list, NULL);
+	// pthread_mutex_init(&lock_list_cpy, NULL);
 
+	int host_count = count_hosts(context->hostnames);
 	for (int i = 0; i < context->thread_count; i++){
 		tinfo[i].sockets_info = sockets_info;
 		tinfo[i].sockets_info_cpy = sockets_info_cpy;
-		tinfo[i].context = ft_calloc(1, sizeof(t_context));
-		ft_memcpy(context, tinfo[i].context, sizeof(t_context));
+		tinfo[i].context = (struct s_context *)ft_calloc(1, sizeof(struct s_context));
+		tinfo[i].context->hostnames = ft_calloc(host_count + 1, sizeof(char*));
+		for (int j = 0; context->hostnames[j]; j++)
+			tinfo[i].context->hostnames[j] = ft_strdup(context->hostnames[j]);
+		for (int k = 0; k < SCAN_COUNT; k++)
+			tinfo[i].context->scan_types[k] = ft_strdup(context->scan_types[k]);
 		pthread_create(&tinfo[i].thread_id, NULL, start_thread, tinfo + i);
 	}
 
 	for (int i = 0; i < context->thread_count; i++){
-		free(tinfo[i].context);
-		pthread_join(tinfo[i].thread_id, NULL);
+		fprintf(stderr, ">>%d<<\n", pthread_join(tinfo[i].thread_id, NULL));
 	}
-	pthread_mutex_destroy(&lock_context);
-	pthread_mutex_destroy(&lock_list);
-	pthread_mutex_destroy(&lock_list_cpy);
 	free(tinfo);
+	// pthread_mutex_destroy(&lock_context);
+	// pthread_mutex_destroy(&lock_list);
+	// pthread_mutex_destroy(&lock_list_cpy);
 
 	clean_list(sockets_info);
 	return 0;
