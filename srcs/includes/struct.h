@@ -98,4 +98,17 @@ struct socket_info{
 	struct socket_info *next;
 };
 
+struct thread_info {
+	pthread_t thread_id;
+	int thread_num;
+	char *argv_string;
+	struct socket_info *sockets_info;
+	struct socket_info *sockets_info_cpy;
+	int *host_i;
+	int *port_i;
+	t_context *context;
+	pthread_mutex_t lock_host_i;
+	pthread_mutex_t lock_port_i;
+};
+
 #endif
