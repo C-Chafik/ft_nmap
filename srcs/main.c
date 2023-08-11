@@ -32,7 +32,7 @@ static void init_context(t_context *context)
     context->targets = NULL;
     context->workers = NULL;
     context->target_count = 0;
-    context->thread_count = 0;
+    context->thread_count = 1;
     context->port_count = 1024;
     context->hostnames = NULL;
     init_scan_types(context->scan_types);
