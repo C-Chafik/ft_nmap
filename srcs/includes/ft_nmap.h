@@ -47,7 +47,7 @@ bool init_in_thread(struct socket_info *sockets_info, char *hostname, int port);
 
 void free_tinfo(struct thread_info *tinfo);
 int count_hosts(char **hosts);
-void init_tinfo_thread(struct thread_info *tinfo, t_context *context, struct socket_info *sockets_info, struct socket_info *sockets_info_cpy);
+void init_tinfo_thread(struct thread_info *tinfo, t_context *context, struct socket_info *sockets_info, struct socket_info *sockets_info_cpy, int*, int*);
 
 void *start_thread(void *arg);
 

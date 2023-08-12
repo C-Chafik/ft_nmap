@@ -2,31 +2,19 @@
 #include "../includes/includes.h"
 #include "../includes/define.h"
 
-void free_tinfo(struct thread_info *tinfo){
-	for (int j = 0; tinfo->context->hostnames[j]; j++)
-		free(tinfo->context->hostnames[j]);
-	free(tinfo->context->hostnames);
-	for (int k = 0; k < SCAN_COUNT; k++)
-		if (tinfo->context->scan_types[k])
-			free(tinfo->context->scan_types[k]);
-	free(tinfo->context);
-}
-
 int count_hosts(char **hosts){
 	int count = 0;
 	for (; hosts[count]; count++);
 	return count;
 }
 
-void init_tinfo_thread(struct thread_info *tinfo, t_context *context, struct socket_info *sockets_info, struct socket_info *sockets_info_cpy){
+void init_tinfo_thread(struct thread_info *tinfo, t_context *context, struct socket_info *sockets_info, struct socket_info *sockets_info_cpy, int *host_i, int *port_i){
 	int host_count = count_hosts(context->hostnames);
-	int *host_i = ft_calloc(1, sizeof(int));
-	*host_i = 0;
-	int *port_i = ft_calloc(1, sizeof(int));
-	*port_i = 0;
-	pthread_mutex_t lock_host_i;
+	pthread_mutex_t lock_host_i = {0};
+	pthread_mutex_t lock_port_i = {0};
 
 	pthread_mutex_init(&lock_host_i, NULL);
+	pthread_mutex_init(&lock_port_i, NULL);
 	for (int i = 0; i < context->thread_count; i++){
 
 		//TMP
@@ -51,7 +39,21 @@ void init_tinfo_thread(struct thread_info *tinfo, t_context *context, struct soc
 		tinfo[i].port_i = port_i;
 		tinfo[i].context->port_count = context->port_count;
 		tinfo[i].lock_host_i = lock_host_i;
+		tinfo[i].lock_port_i = lock_port_i;
 
 		pthread_create(&tinfo[i].thread_id, NULL, start_thread, tinfo + i);
 	}
+}
+
+void free_tinfo(struct thread_info *tinfo){
+	for (int j = 0; tinfo->context->hostnames[j]; j++)
+		free(tinfo->context->hostnames[j]);
+	free(tinfo->context->hostnames);
+	for (int k = 0; k < SCAN_COUNT; k++)
+		if (tinfo->context->scan_types[k])
+			free(tinfo->context->scan_types[k]);
+	// free(tinfo->host_i);
+	// free(tinfo->port_i);
+	free(tinfo->context->ports);
+	free(tinfo->context);
 }

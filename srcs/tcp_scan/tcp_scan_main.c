@@ -74,13 +74,15 @@ int tcp_tester(t_context *context)
 		clean_list(sockets_info);
 			return 4;
 	}
+	int host_i, port_i = 0;
 
-	init_tinfo_thread(tinfo, context, sockets_info, sockets_info_cpy);
+	init_tinfo_thread(tinfo, context, sockets_info, sockets_info_cpy, &host_i, &port_i);
 
 	for (int i = 0; i < context->thread_count; i++)
 		pthread_join(tinfo[i].thread_id, NULL);
 	free(tinfo);
-	pthread_mutex_destroy(&tinfo->lock_host_i);
+	pthread_mutex_destroy(&tinfo->lock_host_i);//! invalid read
+	pthread_mutex_destroy(&tinfo->lock_port_i);//! invalid read
 
 	clean_list(sockets_info);
 	return 0;
